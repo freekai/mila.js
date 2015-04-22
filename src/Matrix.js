@@ -97,6 +97,21 @@
         });
     };
     
+    Matrix.prototype.equalsWithPrecision = function (obj, epsilon) {
+        var i,
+            j;
+        if (!(obj instanceof Matrix)) {
+            throw new Error(obj + " is not comparable to a matrix");
+        }
+        if (this.ir.length !== obj.ir.length) {
+            return false;
+        }
+        return this.ir.every(function (v, i) {
+            var denom = Math.max(Math.abs(v), Math.abs(obj.ir[i]));
+            return Math.abs(obj.ir[i] - v) / denom < epsilon;
+        });
+    };
+    
     Matrix.prototype.x = function (B) {
         var i,
             j,
@@ -123,6 +138,31 @@
             }
         }
                 
+        return result;
+    };
+    
+    Matrix.prototype.toString = function () {
+        var result,
+            i,
+            j,
+            indent = "    ";
+        
+        result = "[\n";
+        result += indent + "[ ";
+        result += this.$(0, 0);
+        for (j = 1; j < this.m; j++) {
+            result += ", " + this.$(0, j);
+        }
+        result += " ]";
+        for (i = 0; i < this.n; i++) {
+            result += ",\n" + indent + "[ ";
+            result += this.$(i, 0);
+            for (j = 1; j < this.m; j++) {
+                result += ", " + this.$(i, j);
+            }
+            result += " ]";
+        }
+        result += "\n]";
         return result;
     };
     
