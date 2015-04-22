@@ -3,41 +3,41 @@
 (function () {
     "use strict";
     
-    var Matrix = function (n, m) {
+    var Matrix = function (m, n) {
         var i,
             j,
             cval;
         
-        if (typeof n === "undefined") {
+        if (typeof m === "undefined") {
             throw new Error("Matrix constructor requires an argument");
-        } else if (typeof n === "number" && typeof m === "number") {
-        // initialize empty matrix of n by m.
-            this._alloc(n, m);
+        } else if (typeof m === "number" && typeof n === "number") {
+        // initialize empty matrix of m by n.
+            this._alloc(m, n);
             return this;
-        } else if (n instanceof Array && typeof m === "undefined") {
+        } else if (m instanceof Array && typeof n === "undefined") {
         // initialize a matrix using array of arrays
         // it is possible to initialize a matrix using an array of arrays
-        // or an array (it will be row vector 1 by m)
-            if (n[0] instanceof Array) {
-                if (typeof n[0][0] === "number") {
+        // or an array (it will be row vector 1 by n)
+            if (m[0] instanceof Array) {
+                if (typeof m[0][0] === "number") {
         // array of arrays
-                    this.n = n.length;
-                    this.m = n[0].length;
-                } else if (n[0][0] instanceof Array) {
+                    this.m = m.length;
+                    this.n = m[0].length;
+                } else if (m[0][0] instanceof Array) {
                     throw new Error("Matrix can be initialized either by array" +
                                     " or array of arrays");
                 } else {
                     throw new Error("Matrix values must be numbers");
                 }
-            } else if (typeof n[0] === "number") {
+            } else if (typeof m[0] === "number") {
         // row vector
-                this.n = 1;
-                this.m = n.length;
+                this.m = 1;
+                this.n = m.length;
             }
-            this._alloc(this.n, this.m);
-            for (i = 0; i < this.n; i++) {
-                for (j = 0; j < this.m; j++) {
-                    cval = (this.n === 1) ? n[j] : n[i][j];
+            this._alloc(this.m, this.n);
+            for (i = 0; i < this.m; i++) {
+                for (j = 0; j < this.n; j++) {
+                    cval = (this.m === 1) ? m[j] : m[i][j];
                     if (typeof cval === "undefined") {
                         this.ir = null;
                         throw new Error("Matrix should be square");
@@ -49,7 +49,7 @@
                         throw new Error("Matrix values must be numbers");
                     }
                 }
-                cval = (this.n === 1) ? n[j] : n[i][j];
+                cval = (this.m === 1) ? m[j] : m[i][j];
                 if (typeof cval !== "undefined") {
                     this.ir = null;
                     throw new Error("Matrix should be square");
@@ -62,12 +62,12 @@
     Matrix.prototype.constructor = Matrix;
 
     /**
-     * Returns element at position [n, m].
+     * Returns element at position [m, n].
      * @return {number}
      */
-    Matrix.prototype.$ = function (n, m, val) {
+    Matrix.prototype.$ = function (m, n, val) {
         // FIXME: boundary checks
-        var idx = n * this.m + m;
+        var idx = m * this.n + n;
         if (typeof val === "undefined") {
             return this.ir[idx];
         } else if (typeof val === "number") {
@@ -77,17 +77,17 @@
         }
     };
     
-    Matrix.prototype._alloc = function (n, m) {
-        if (n < 1 || m < 1) {
+    Matrix.prototype._alloc = function (m, n) {
+        if (m < 1 || n < 1) {
             throw new Error("Invalid matrix size");
         }
-        if ((this.n && n && this.n !== n) ||
-                (this.m && m && this.m !== m)) {
+        if ((this.m && m && this.m !== m) ||
+                (this.n && n && this.n !== n)) {
             throw new Error("Matrix size cannot be reset");
         }
-        this.n = n;
         this.m = m;
-        this.ir = new Float64Array(n * m);
+        this.n = n;
+        this.ir = new Float64Array(m * n);
     };
     
     Matrix.prototype.equals = function (obj) {
@@ -129,17 +129,17 @@
         if (typeof B === "undefined" || !(B instanceof Matrix)) {
             throw new Error("Only two matrices can be multiplied");
         }
-        if (this.m !== B.n) {
-            throw new Error("Matrices cannot be multiplied " + this.n + "x" + this.m +
-                            " * " + B.n + "x" + B.m);
+        if (this.n !== B.m) {
+            throw new Error("Matrices cannot be multiplied " + this.m + "x" + this.n +
+                            " * " + B.m + "x" + B.n);
         }
         
-        result = new Matrix(this.n, B.m);
+        result = new Matrix(this.m, B.n);
         
-        for (i = 0; i < this.n; i++) {
-            for (j = 0; j < B.m; j++) {
+        for (i = 0; i < this.m; i++) {
+            for (j = 0; j < B.n; j++) {
                 result.$(i, j, 0);
-                for (k = 0; k < this.m; k++) {
+                for (k = 0; k < this.n; k++) {
                     result.$(i, j, result.$(i, j) + this.$(i, k) * B.$(k, j));
                 }
             }
@@ -157,14 +157,14 @@
         result = "[\n";
         result += indent + "[ ";
         result += this.$(0, 0);
-        for (j = 1; j < this.m; j++) {
+        for (j = 1; j < this.n; j++) {
             result += ", " + this.$(0, j);
         }
         result += " ]";
-        for (i = 0; i < this.n; i++) {
+        for (i = 0; i < this.m; i++) {
             result += ",\n" + indent + "[ ";
             result += this.$(i, 0);
-            for (j = 1; j < this.m; j++) {
+            for (j = 1; j < this.n; j++) {
                 result += ", " + this.$(i, j);
             }
             result += " ]";

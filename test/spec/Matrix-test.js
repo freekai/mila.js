@@ -25,8 +25,8 @@ describe("Matrix unit tests", function () {
                 ],
                 mtx = new Matrix(initValue);
             
-            expect(mtx.n).toEqual(initValue.length);
-            expect(mtx.m).toEqual(initValue[0].length);
+            expect(mtx.m).toEqual(initValue.length);
+            expect(mtx.n).toEqual(initValue[0].length);
             expect(mtx.$(0, 0)).toEqual(initValue[0][0]);
             expect(mtx.$(1, 1)).toEqual(initValue[1][1]);
             expect(mtx.$(2, 0)).toEqual(initValue[2][0]);
@@ -95,9 +95,9 @@ describe("Matrix unit tests", function () {
         });
         
         it("should throw error if matrix size is invalid", function () {
-            var positive = function (n, m) {
+            var positive = function (m, n) {
                 return function () {
-                    var mtx = new Matrix(n, m);
+                    var mtx = new Matrix(m, n);
                 };
             };
             
@@ -157,9 +157,9 @@ describe("Matrix unit tests", function () {
             
             var mtx1 = new Matrix(10, 20);
             
-            var positive = function (n, m) {
+            var positive = function (m, n) {
                 return function () {
-                    return mtx1.x(new Matrix(n, m));
+                    return mtx1.x(new Matrix(m, n));
                 };
             };
             
@@ -192,8 +192,8 @@ describe("Matrix unit tests", function () {
             
             result = mtx1.x(mtx2);
             expect(result).toBeDefined();
-            expect(result.n).toBe(2);
-            expect(result.m).toBe(1);
+            expect(result.m).toBe(2);
+            expect(result.n).toBe(1);
             expect(result.equals(product)).toBe(true);
             
             mtx1 = new Matrix([1]);
@@ -202,8 +202,8 @@ describe("Matrix unit tests", function () {
             
             result = mtx1.x(mtx2);
             expect(result).toBeDefined();
-            expect(result.n).toBe(1);
             expect(result.m).toBe(1);
+            expect(result.n).toBe(1);
             expect(result.equals(product)).toBe(true);
             
             mtx1 = new Matrix([
