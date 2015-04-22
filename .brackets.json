@@ -5,7 +5,8 @@
         "devel": true,
         "nomen": true,
         "maxerr": 50,
-        "es5": true
+        "es5": true,
+        "indent": 4
     },
     "path": {
         "src/polyfills.js": {
