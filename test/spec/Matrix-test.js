@@ -34,9 +34,65 @@ describe("Matrix unit tests", function () {
             expect(mtx.$(4, 1)).toEqual(initValue[4][1]);
         });
         
-        it("should throw error if matrix is not square");
+        it("should throw error if matrix is not square", function () {
+            var case1 = function () {
+                    return new Matrix([
+                        [1, 2],
+                        [2]
+                    ]);
+                },
+                case2 = function () {
+                    return new Matrix([
+                        [1, 2, 3],
+                        [4, 5, 6],
+                        [8, 9, 10, 11]
+                    ]);
+                },
+                case3 = function () {
+                    return new Matrix([
+                        [1],
+                        [2, 3],
+                        [4, 5, 6]
+                    ]);
+                };
+            
+            expect(case1).toThrowError("Matrix should be square");
+            expect(case2).toThrowError("Matrix should be square");
+            expect(case3).toThrowError("Matrix should be square");
+            
+        });
         
-        it("should throw error if matrix contains non-numeric elements");
+        it("should throw error if matrix contains non-numeric elements", function () {
+            var case1 = function () {
+                    return new Matrix([
+                        [1, 2],
+                        [2, true]
+                    ]);
+                },
+                case2 = function () {
+                    return new Matrix([
+                        ["1", "2"]
+                    ]);
+                },
+                case3 = function () {
+                    return new Matrix([
+                        [[1, 2], 3],
+                        [[4, 5], [6, 7]]
+                    ]);
+                },
+                case4 = function () {
+                    return new Matrix([
+                        [1, [2, 3]],
+                        [[4, 5], 6]
+                    ]);
+                };
+            
+            expect(case1).toThrowError("Matrix values must be numbers");
+            expect(case2).toThrowError("Matrix values must be numbers");
+            expect(case3).toThrowError("Matrix can be initialized either by array or array of arrays");
+            expect(case4).toThrowError("Matrix values must be numbers");
+            
+        });
         
         it("should throw error if matrix size is invalid", function () {
             var positive = function (n, m) {

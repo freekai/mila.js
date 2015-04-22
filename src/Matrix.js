@@ -23,9 +23,11 @@
         // array of arrays
                     this.n = n.length;
                     this.m = n[0].length;
-                } else {
+                } else if (n[0][0] instanceof Array) {
                     throw new Error("Matrix can be initialized either by array" +
                                     " or array of arrays");
+                } else {
+                    throw new Error("Matrix values must be numbers");
                 }
             } else if (typeof n[0] === "number") {
         // row vector
@@ -46,6 +48,11 @@
                         this.ir = null;
                         throw new Error("Matrix values must be numbers");
                     }
+                }
+                cval = (this.n === 1) ? n[j] : n[i][j];
+                if (typeof cval !== "undefined") {
+                    this.ir = null;
+                    throw new Error("Matrix should be square");
                 }
             }
         }
