@@ -129,6 +129,35 @@ describe("Matrix unit tests", function () {
             expect(String("") + mtx).toEqual(expected);
             
         });
+                
+    });
+    
+    describe("Matrix static methods", function () {
+        
+        it("should construct identity matrices correctly", function () {
+            var result,
+                expected;
+            
+            result = Matrix.I(1);
+            expected = new Matrix([1]);
+            expect(result.equals(expected)).toBe(true);
+            
+            result = Matrix.I(2);
+            expected = new Matrix([
+                [1, 0],
+                [0, 1]
+            ]);
+            expect(result.equals(expected)).toBe(true);
+            
+            result = Matrix.I(3);
+            expected = new Matrix([
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1]
+            ]);
+            expect(result.equals(expected)).toBe(true);
+            
+        });
         
     });
     

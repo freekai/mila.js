@@ -173,6 +173,21 @@
         return result;
     };
     
+    Matrix.prototype.lu = function () {
+        
+    };
+    
+    /** STATIC FUNCTIONS **/
+    
+    Matrix.I = function (n) {
+        var result = new Matrix(n, n),
+            i;
+        for (i = 0; i < n; i++) {
+            result.$(i, i, 1);
+        }
+        return result;
+    };
+    
     window.Matrix = Matrix;
     
 }());
