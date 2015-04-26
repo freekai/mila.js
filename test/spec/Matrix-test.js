@@ -128,6 +128,29 @@ describe("Matrix unit tests", function () {
             expect(String("") + mtx).toEqual(expected);
             
         });
+        
+        it("should correctly transpose matrices", function () {
+            var result,
+                expected;
+            
+            expected = new Matrix([1]);
+            result = (new Matrix([1])).tr();
+            expect(expected.equals(result)).toBe(true);
+            
+            expected = new Matrix([
+                [1, 2, 3],
+                [4, 5, 6]
+            ]);
+            result = (new Matrix([
+                [1, 4],
+                [2, 5],
+                [3, 6]
+            ])).tr();
+            expect(result.m).toEqual(expected.m);
+            expect(result.n).toEqual(expected.n);
+            expect(expected.equals(result)).toBe(true);
+            
+        });
                 
     });
     

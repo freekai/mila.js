@@ -3,6 +3,14 @@
 (function () {
     "use strict";
     
+    /** UTILITY FUNCTIONS **/
+    function _idx2ij(rawIdx, m, n) {
+        var i = Math.floor(rawIdx / n),
+            j = rawIdx - i * n;
+        return [i, j];
+    }
+    
+    /** MATRIX CLASS **/
     var Matrix = function (m, n) {
         var i,
             j,
@@ -173,6 +181,15 @@
         return result;
     };
     
+    Matrix.prototype.tr = function () {
+        var result = new Matrix(this.n, this.m);
+        this.ir.map(function (val, idx) {
+            var ij = _idx2ij(idx, this.m, this.n);
+            result.$(ij[1], ij[0], val);
+        }, this);
+        return result;
+    };
+    
     Matrix.prototype.lu = function () {
         
     };
@@ -186,6 +203,10 @@
             result.$(i, i, 1);
         }
         return result;
+    };
+    
+    Matrix.tr = function (A) {
+        return A.tr();
     };
     
     window.Matrix = Matrix;
