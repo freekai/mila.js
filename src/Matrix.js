@@ -123,6 +123,12 @@
         return result;
     };
     
+    Matrix.prototype.clone = function () {
+        var result = new Matrix(this.m, this.n);
+        result.ir = this.ir.slice();
+        return result;
+    };
+    
     Matrix.prototype.equals = function (obj) {
         var i,
             j;

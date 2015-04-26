@@ -151,6 +151,36 @@ describe("Matrix unit tests", function () {
             expect(expected.equals(result)).toBe(true);
             
         });
+        
+        it("should return a shallow copy when clone()'ed", function () {
+            var mtx,
+                result,
+                anotherResult;
+            
+            mtx = new Matrix([1]);
+            result = mtx.clone();
+            expect(result).toBeDefined();
+            expect(mtx.equals(result)).toBe(true);
+            mtx.$(0, 0, 2);
+            expect(mtx.equals(result)).toBe(false);
+            
+            mtx = new Matrix([
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ]);
+            result = mtx.clone();
+            anotherResult = mtx.clone();
+            expect(result).toBeDefined();
+            expect(result.m).toEqual(mtx.m);
+            expect(result.n).toEqual(mtx.n);
+            expect(mtx.equals(result)).toBe(true);
+            expect(result === anotherResult).toBe(false);
+            expect(mtx.equals(anotherResult)).toBe(true);
+            mtx.$(2, 1, 0);
+            expect(mtx.equals(anotherResult)).toBe(false);
+            
+        });
                 
     });
     
