@@ -90,6 +90,31 @@
         this.ir = new Float64Array(m * n);
     };
     
+    Matrix.prototype.toString = function () {
+        var result,
+            i,
+            j,
+            indent = "    ";
+        
+        result = "[\n";
+        result += indent + "[ ";
+        result += this.$(0, 0);
+        for (j = 1; j < this.n; j++) {
+            result += ", " + this.$(0, j);
+        }
+        result += " ]";
+        for (i = 0; i < this.m; i++) {
+            result += ",\n" + indent + "[ ";
+            result += this.$(i, 0);
+            for (j = 1; j < this.n; j++) {
+                result += ", " + this.$(i, j);
+            }
+            result += " ]";
+        }
+        result += "\n]";
+        return result;
+    };
+    
     Matrix.prototype.equals = function (obj) {
         var i,
             j;
@@ -145,31 +170,6 @@
             }
         }
                 
-        return result;
-    };
-    
-    Matrix.prototype.toString = function () {
-        var result,
-            i,
-            j,
-            indent = "    ";
-        
-        result = "[\n";
-        result += indent + "[ ";
-        result += this.$(0, 0);
-        for (j = 1; j < this.n; j++) {
-            result += ", " + this.$(0, j);
-        }
-        result += " ]";
-        for (i = 0; i < this.m; i++) {
-            result += ",\n" + indent + "[ ";
-            result += this.$(i, 0);
-            for (j = 1; j < this.n; j++) {
-                result += ", " + this.$(i, j);
-            }
-            result += " ]";
-        }
-        result += "\n]";
         return result;
     };
     
