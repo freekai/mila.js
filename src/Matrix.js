@@ -103,7 +103,7 @@
             result += ", " + this.$(0, j);
         }
         result += " ]";
-        for (i = 0; i < this.m; i++) {
+        for (i = 1; i < this.m; i++) {
             result += ",\n" + indent + "[ ";
             result += this.$(i, 0);
             for (j = 1; j < this.n; j++) {
