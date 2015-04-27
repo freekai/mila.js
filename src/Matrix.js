@@ -3,18 +3,24 @@
 (function () {
     "use strict";
     
-    /** UTILITY FUNCTIONS **/
+    /* UTILITY FUNCTIONS */
+    
     function _idx2ij(rawIdx, m, n) {
         var i = Math.floor(rawIdx / n),
             j = rawIdx - i * n;
         return [i, j];
     }
     
-    /** MATRIX CLASS **/
-    var Matrix = function (m, n) {
+    /* MATRIX CLASS */
+    
+    var Matrix = function (m, n, ir, offset) {
         var i,
             j,
             cval;
+        
+        this.m = 0;
+        this.n = 0;
+        this.ir = null;
         
         if (typeof m === "undefined") {
             throw new Error("Matrix constructor requires an argument");
@@ -85,6 +91,36 @@
         }
     };
     
+    Matrix.prototype._$row = function (m, val) {
+        if (!val || val.constructor !== Float64Array) {
+            throw new Error("Value should be a Float64Array");
+        }
+        // FIXME: boundary checks
+        // FIXME: vectorize
+        
+        var j;
+        
+        for (j = 0; j < this.n; j++) {
+            this.$(m, j, val[j]);
+        }
+    };
+    
+    Matrix.prototype._swapRows = function (i, j) {
+        if (i === j) {
+            return this;
+        }
+        // FIXME: allocate max(m, n) more and use it to move bytes within
+        var tmpj = this.ir.slice(j * this.n, (j + 1) * this.n),
+            tmpi = this.ir.subarray(i * this.n, (i + 1) * this.n);
+        tmpi.forEach(function (val, idx) {
+            this.ir[j * this.n + idx] = val;
+        }.bind(this));
+        tmpj.forEach(function (val, idx) {
+            tmpi[idx] = val;
+        });
+        return this;
+    };
+    
     Matrix.prototype._alloc = function (m, n) {
         if (m < 1 || n < 1) {
             throw new Error("Invalid matrix size");
@@ -97,7 +133,7 @@
         this.n = n;
         this.ir = new Float64Array(m * n);
     };
-    
+        
     Matrix.prototype.toString = function () {
         var result,
             i,
@@ -197,6 +233,65 @@
     };
     
     Matrix.prototype.lu = function () {
+        if (this.n !== this.m) {
+            throw new Error("Rectangular matrix LU factorization is not implemented");
+        }
+                
+        /* max in [ci:m, cj] */
+        function max(A, ci, cj) {
+            var i,
+                mval,
+                r;
+            
+            for (i = ci + 1, mval = A.$(ci, cj), r = cj; i < A.m; i++) {
+                if (A.$(i, cj) > mval) {
+                    mval = A.$(i, cj);
+                    r = i;
+                }
+            }
+            return r;
+        }
+        
+        var i,
+            j,
+            k,
+            l,
+            midx,
+            row;
+        
+        var P = Matrix.I(this.m),
+            // the matrix we will be operating on
+            A = this.clone();
+        
+        // FIXME: draft implementation, see fixmes in inside the loop
+        for (i = 0; i < this.n - 1; i++) {
+            midx = max(A, i, i);
+            P = P._swapRows(i, midx);
+            A._swapRows(i, midx);
+            if (A.$(i, i) !== 0) {
+                // FIXME: !!! ugly operations, need matrix regions
+                var tmp = i + 1;
+                for (j = tmp; j < A.n; j++) {
+                    A.$(j, i, A.$(j, i) / A.$(i, i));
+                }
+                var T = new Matrix(A.n - tmp, A.n - tmp);
+                for (j = 0; j < A.n - tmp; j++) {
+                    for (k = 0; k < A.n - tmp; k++) {
+                        T.$(j, k, T.$(j, k) + A.$(tmp + j, i) * A.$(i, tmp + k));
+                    }
+                }
+                for (j = 0; j < A.n - tmp; j++) {
+                    for (k = 0; k < A.n - tmp; k++) {
+                        A.$(tmp + j, tmp + k, A.$(tmp + j, tmp + k) - T.$(j, k));
+                    }
+                }
+            } else {
+                // FIXME: singular, throw an error
+                throw new Error("Singular!");
+            }
+        }
+        
+        return [A, P];
         
     };
     

@@ -1,4 +1,4 @@
-/*global describe, it, Matrix, expect */
+/*global describe, it, xit, Matrix, expect */
 describe("Matrix unit tests", function () {
     
     "use strict";
@@ -181,6 +181,22 @@ describe("Matrix unit tests", function () {
             expect(mtx.equals(anotherResult)).toBe(false);
             
         });
+        
+        it("should swap rows correctly", function () {
+            var mtx;
+            
+            mtx = new Matrix([
+                [1, 2, 3],
+                [2, 3, 4],
+                [3, 4, 5]
+            ]);
+            mtx._swapRows(0, 1);
+            expect(mtx.equals(new Matrix([
+                [2, 3, 4],
+                [1, 2, 3],
+                [3, 4, 5]
+            ]))).toBe(true);
+        });
                 
     });
     
@@ -359,6 +375,25 @@ describe("Matrix unit tests", function () {
         
         it("should perform LU factorization correctly", function () {
             var mtx = new Matrix([
+                    [3, 17, 10],
+                    [2, 4, -2],
+                    [6, 18, -12]
+                ]),
+                expected = new Matrix([
+                    [6,     18,     -12],
+                    [1 / 2, 8,      16],
+                    [1 / 3, -1 / 4, 6]
+                ]),
+                result;
+            
+            result = mtx.lu();
+            
+            expect(result[0].equals(expected)).toBe(true);
+                        
+        });
+        
+        xit("should perform LU factorization as octave does", function () {
+            var mtx = new Matrix([
                     [  35.97618080955179, 94.57070314249891, 49.98344086675048, 67.33494624141161, 14.63598802946727 ],
                     [  91.44131503552501, 93.57300959959645, 18.51588934612332, 69.26371258936508, 29.06687359825972 ],
                     [  91.21217625620811, 49.43148799778407, 50.76503051832285, 30.22879917057334, 50.69626919721502 ],
@@ -389,15 +424,19 @@ describe("Matrix unit tests", function () {
                 result;
             
             result = mtx.lu();
+                        
+            // sanity checks
+            expect((p.x(mtx)).equalsWithPrecision(l.x(u), 10e-15)).toBe(true);
+            expect(mtx.equalsWithPrecision(p.tr().x(l.x(u)), 10e-15)).toBe(true);
             
             expect(result).toBeDefined();
             expect(result[0]).toBeDefined();
             expect(result[1]).toBeDefined();
             expect(result[2]).toBeDefined();
             // FIXME: precision is for the draft test
-            expect(result[0].equalsWithPrecision(l, 10e-10)).toBe(true);
-            expect(result[1].equalsWithPrecision(u, 10e-10)).toBe(true);
-            expect(result[2].equalsWithPrecision(p, 10e-10)).toBe(true);
+            expect(result[0].equalsWithPrecision(l, 10e-15)).toBe(true);
+            expect(result[1].equalsWithPrecision(u, 10e-15)).toBe(true);
+            expect(result[2].equalsWithPrecision(p, 10e-15)).toBe(true);
             
         });
 
