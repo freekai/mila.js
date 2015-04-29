@@ -18,10 +18,6 @@
             j,
             cval;
         
-        this.m = 0;
-        this.n = 0;
-        this.ir = null;
-        
         if (typeof m === "undefined") {
             throw new Error("Matrix constructor requires an argument");
         } else if (typeof m === "number" && typeof n === "number") {
@@ -213,7 +209,6 @@
         
         for (i = 0; i < this.m; i++) {
             for (j = 0; j < B.n; j++) {
-                result.$(i, j, 0);
                 for (k = 0; k < this.n; k++) {
                     result.$(i, j, result.$(i, j) + this.$(i, k) * B.$(k, j));
                 }
