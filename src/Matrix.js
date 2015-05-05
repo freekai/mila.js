@@ -3,6 +3,8 @@
 (function () {
     "use strict";
     
+    var DEFAULT_OFFSET = [0, 0];
+    
     /* UTILITY FUNCTIONS */
     
     function _idx2ij(rawIdx, m, n) {
@@ -13,17 +15,21 @@
     
     /* MATRIX CLASS */
     
-    var Matrix = function (m, n, ir, offset) {
+    var Matrix = function (m, n, /* the rest is used internally */ size) {
         var i,
             j,
             cval;
         
         if (typeof m === "undefined") {
             throw new Error("Matrix constructor requires an argument");
-        } else if (typeof m === "number" && typeof n === "number") {
+        }
+        
+        this.offset = DEFAULT_OFFSET;
+        
+        if (typeof m === "number" && typeof n === "number") {
         // initialize empty matrix of m by n.
             this._alloc(m, n);
-            return this;
+            this.offset = [0, 0];
         } else if (m instanceof Array && typeof n === "undefined") {
         // initialize a matrix using array of arrays
         // it is possible to initialize a matrix using an array of arrays
@@ -65,7 +71,16 @@
                     throw new Error("Matrix should be square");
                 }
             }
+        } else if (m instanceof Matrix && n !== undefined && n instanceof Array && n.length === 2) {
+            this.ir = m.ir;
+            this.m = m.m;
+            this.n = m.n;
+            this.offset = n;
+        } else {
+            throw new Error("Internal error. Matrix cannot be constructed: arguments not understood.", arguments);
         }
+        
+        return this;
     };
 
     Matrix.prototype = Object.create(null);
@@ -77,7 +92,7 @@
      */
     Matrix.prototype.$ = function (m, n, val) {
         // FIXME: boundary checks
-        var idx = m * this.n + n;
+        var idx = (m + this.offset[0]) * this.n + (n + this.offset[1]);
         if (typeof val === "undefined") {
             return this.ir[idx];
         } else if (typeof val === "number") {
@@ -105,6 +120,8 @@
         if (i === j) {
             return this;
         }
+        i = this.offset[0] + i;
+        j = this.offset[1] + j;
         // FIXME: allocate max(m, n) more and use it to move bytes within
         var tmpj = this.ir.slice(j * this.n, (j + 1) * this.n),
             tmpi = this.ir.subarray(i * this.n, (i + 1) * this.n);
@@ -118,8 +135,16 @@
     };
     
     Matrix.prototype._alloc = function (m, n) {
+        if (this.offset !== DEFAULT_OFFSET) {
+            // cannot allocate a matrix which is has not default [0, 0] offset
+            throw new Error("Internal Error. Offset is not " + DEFAULT_OFFSET);
+        }
         if (m < 1 || n < 1) {
             throw new Error("Invalid matrix size");
+        }
+        if (this.ir) {
+            // never allow re-allocating the matrix
+            throw new Error("Internal error. IR is already present.");
         }
         if ((this.m && m && this.m !== m) ||
                 (this.n && n && this.n !== n)) {
@@ -134,19 +159,21 @@
         var result,
             i,
             j,
-            indent = "    ";
+            indent = "    ",
+            offseti = this.offset[0],
+            offsetj = this.offset[1];
         
         result = "[\n";
         result += indent + "[ ";
-        result += this.$(0, 0);
-        for (j = 1; j < this.n; j++) {
+        result += this.$(offseti, offsetj);
+        for (j = offsetj + 1; j < this.n; j++) {
             result += ", " + this.$(0, j);
         }
         result += " ]";
-        for (i = 1; i < this.m; i++) {
+        for (i = offseti + 1; i < this.m; i++) {
             result += ",\n" + indent + "[ ";
             result += this.$(i, 0);
-            for (j = 1; j < this.n; j++) {
+            for (j = offsetj + 1; j < this.n; j++) {
                 result += ", " + this.$(i, j);
             }
             result += " ]";
@@ -162,14 +189,13 @@
     };
     
     Matrix.prototype.equals = function (obj) {
-        var i,
-            j;
         if (!(obj instanceof Matrix)) {
             throw new Error(obj + " is not comparable to a matrix");
         }
-        if (this.ir.length !== obj.ir.length) {
+        if (this.m * this.n !== obj.m * obj.n) {
             return false;
         }
+        // FIXME: will not work for partition
         return this.ir.every(function (v, i) {
             return obj.ir[i] === v;
         });
@@ -184,6 +210,7 @@
         if (this.ir.length !== obj.ir.length) {
             return false;
         }
+        // FIXME: will not work for partition
         return this.ir.every(function (v, i) {
             var denom = Math.max(Math.abs(v), Math.abs(obj.ir[i]));
             return Math.abs(obj.ir[i] - v) / denom < epsilon;
@@ -207,6 +234,7 @@
         
         result = new Matrix(this.m, B.n);
         
+        // TODO: vectorize
         for (i = 0; i < this.m; i++) {
             for (j = 0; j < B.n; j++) {
                 for (k = 0; k < this.n; k++) {
@@ -218,6 +246,7 @@
         return result;
     };
     
+    // FIXME: should not work for partitions
     Matrix.prototype.tr = function () {
         var result = new Matrix(this.n, this.m);
         this.ir.map(function (val, idx) {

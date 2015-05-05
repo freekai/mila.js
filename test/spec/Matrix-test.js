@@ -1,4 +1,4 @@
-/*global describe, it, xit, Matrix, expect */
+/*global describe, it, xit, Matrix, expect, Float64Array */
 describe("Matrix unit tests", function () {
     
     "use strict";
@@ -227,6 +227,53 @@ describe("Matrix unit tests", function () {
             
         });
         
+    });
+    
+    describe("Internal matrix uses", function () {
+        
+        it("should throw when the arguments are passed incorrectly", function () {
+            var positive;
+            
+            positive = function () {
+                return new Matrix(4);
+            };
+            expect(positive).toThrowError(/^Internal error\./);
+            
+            positive = function () {
+                return new Matrix(new Float64Array(20), [1, 2, 3]);
+            };
+            expect(positive).toThrowError(/^Internal error\./);
+
+            positive = function () {
+                return new Matrix(new Matrix([1]), "hi");
+            };
+            expect(positive).toThrowError(/^Internal error\./);
+            
+            positive = function () {
+                return new Matrix(new Matrix([1, 3]), [1, 2, 3]);
+            };
+            expect(positive).toThrowError(/^Internal error\./);
+            
+            positive = function () {
+                return new Matrix(new Matrix([2]), [1]);
+            };
+            expect(positive).toThrowError(/^Internal error\./);
+
+        });
+        
+    });
+    
+    describe("Matrix partitioning", function () {
+        
+        xit("should partition a matrix correctly", function () {
+            var mtx = new Matrix([
+                [1, 3, 4, 5],
+                [3, 4, 5, 6],
+                [2, 1, 4, 5],
+                [6, 11, 3, 7],
+                [43, 55, 66, 66]
+            ]);
+        });
     });
     
     describe("Matrix multiplication", function () {
