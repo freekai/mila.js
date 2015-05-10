@@ -102,20 +102,6 @@
         }
     };
     
-    Matrix.prototype._$row = function (m, val) {
-        if (!val || val.constructor !== Float64Array) {
-            throw new Error("Value should be a Float64Array");
-        }
-        // FIXME: boundary checks
-        // FIXME: vectorize
-        
-        var j;
-        
-        for (j = 0; j < this.n; j++) {
-            this.$(m, j, val[j]);
-        }
-    };
-    
     Matrix.prototype._swapRows = function (i, j) {
         if (i === j) {
             return this;
