@@ -261,19 +261,35 @@ describe("Matrix unit tests", function () {
 
         });
         
-    });
-    
-    describe("Matrix partitioning", function () {
-        
-        xit("should partition a matrix correctly", function () {
+        it("should partition a matrix correctly", function () {
             var mtx = new Matrix([
-                [1, 3, 4, 5],
-                [3, 4, 5, 6],
-                [2, 1, 4, 5],
-                [6, 11, 3, 7],
-                [43, 55, 66, 66]
-            ]);
+                    [1, 3, 4, 5],
+                    [3, 4, 5, 6],
+                    [2, 1, 4, 5],
+                    [6, 11, 3, 7],
+                    [43, 55, 74, 66]
+                ]),
+                part;
+            
+            expect((new Matrix(mtx, [0, 0], [1, 1])).equals(new Matrix([1]))).toBe(true);
+            part = new Matrix(mtx, [0, 0], [2, 2]);
+            expect(part.$([0, 0])).toBe(1);
+            expect(part.$(0, 1)).toBe(3);
+            expect(part.$(1, 0)).toBe(3);
+            expect((new Matrix(mtx, [0, 0], [2, 2])).equals(new Matrix([[1, 3], [3, 4]]))).toBe(true);
+            part = new Matrix(mtx, [1, 1], [2, 3]);
+            expect(part.equals(new Matrix([[4, 5, 6], [1, 4, 5]]))).toBe(true);
+            part = new Matrix(mtx, [1, 1], [3, 2]);
+            expect(part.equals(new Matrix([[4, 5], [1, 4], [11, 3]]))).toBe(true);
+            part = new Matrix(mtx, [3, 0], [2, 4]);
+            expect(part.equals(new Matrix([[6, 11, 3, 7], [43, 55, 74, 66]]))).toBe(true);
+            part = new Matrix(mtx, [2, 0], [1, 4]);
+            expect(part.equals(new Matrix([2, 1, 4, 5]))).toBe(true);
+            part = new Matrix(mtx, [0, 2], [5, 1]);
+            expect(part.equals(new Matrix([4, 5, 4, 3, 74]).tr())).toBe(true);
+            
         });
+        
     });
     
     describe("Matrix multiplication", function () {

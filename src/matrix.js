@@ -72,10 +72,17 @@
                 }
             }
         } else if (m instanceof Matrix && n !== undefined && n instanceof Array && n.length === 2) {
+            // TODO: check boundary conditions
             this.ir = m.ir;
-            this.m = m.m;
-            this.n = m.n;
+            this.step = m.n;
             this.offset = n;
+            if (size !== undefined && size instanceof Array && size.length === 2) {
+                this.m = size[0];
+                this.n = size[1];
+            } else {
+                this.m = m.m - this.offset[0];
+                this.n = m.n - this.offset[1];
+            }
         } else {
             throw new Error("Internal error. Matrix cannot be constructed: arguments not understood.", arguments);
         }
@@ -91,8 +98,17 @@
      * @return {number}
      */
     Matrix.prototype.$ = function (m, n, val) {
+        var i, j;
+        if (m instanceof Array && m.length === 2) {
+            i = m[0];
+            j = m[1];
+            val = n;
+        } else {
+            i = m;
+            j = n;
+        }
         // FIXME: boundary checks
-        var idx = (m + this.offset[0]) * this.n + (n + this.offset[1]);
+        var idx = (i + this.offset[0]) * this.step + (j + this.offset[1]);
         if (typeof val === "undefined") {
             return this.ir[idx];
         } else if (typeof val === "number") {
@@ -138,6 +154,7 @@
         }
         this.m = m;
         this.n = n;
+        this.step = n;
         this.ir = new Float64Array(m * n);
     };
         
@@ -145,21 +162,19 @@
         var result,
             i,
             j,
-            indent = "    ",
-            offseti = this.offset[0],
-            offsetj = this.offset[1];
+            indent = "    ";
         
         result = "[\n";
         result += indent + "[ ";
-        result += this.$(offseti, offsetj);
-        for (j = offsetj + 1; j < this.n; j++) {
+        result += this.$(0, 0);
+        for (j = 1; j < this.n; j++) {
             result += ", " + this.$(0, j);
         }
         result += " ]";
-        for (i = offseti + 1; i < this.m; i++) {
+        for (i = 1; i < this.m; i++) {
             result += ",\n" + indent + "[ ";
             result += this.$(i, 0);
-            for (j = offsetj + 1; j < this.n; j++) {
+            for (j = 1; j < this.n; j++) {
                 result += ", " + this.$(i, j);
             }
             result += " ]";
@@ -182,9 +197,25 @@
             return false;
         }
         // FIXME: will not work for partition
-        return this.ir.every(function (v, i) {
-            return obj.ir[i] === v;
-        });
+        return this.every(function (v, i) {
+            return obj.$(i) === v;
+        }, this);
+    };
+    
+    Matrix.prototype.every = function (callback, tval) {
+        var i, j, T, result;
+        if (tval === undefined) {
+            T = this;
+        }
+        for (i = 0; i < this.m; i++) {
+            for (j = 0; j < this.n; j++) {
+                result = callback.call(T, this.$(i, j), [i, j]);
+                if (!result) {
+                    return false;
+                }
+            }
+        }
+        return true;
     };
     
     Matrix.prototype.equalsWithPrecision = function (obj, epsilon) {
@@ -230,6 +261,18 @@
         }
                 
         return result;
+    };
+    
+    Matrix.prototype.div = function (scalar) {
+        if (typeof scalar !== "number") {
+            throw new Error("Only division by scalar is allowed");
+        }
+        if (scalar === 0) {
+            throw new Error("Division by zero");
+        }
+        this.every(function (v, i) {
+            this.$(i, v / scalar);
+        });
     };
     
     // FIXME: should not work for partitions
