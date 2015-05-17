@@ -1,7 +1,9 @@
-/*global describe, it, xit, Matrix, expect, Float64Array */
+/*global describe, it, xit, expect, beforeEach, Matrix, Float64Array */
 describe("Matrix unit tests", function () {
     
     "use strict";
+    
+    var INTERNAL_ERROR_REGEX = /^Internal error\./;
     
     describe("Matrix construction", function () {
         
@@ -206,18 +208,18 @@ describe("Matrix unit tests", function () {
             var result,
                 expected;
             
-            result = Matrix.I(1);
+            result = Matrix.eye(1);
             expected = new Matrix([1]);
             expect(result.equals(expected)).toBe(true);
             
-            result = Matrix.I(2);
+            result = Matrix.eye(2);
             expected = new Matrix([
                 [1, 0],
                 [0, 1]
             ]);
             expect(result.equals(expected)).toBe(true);
             
-            result = Matrix.I(3);
+            result = Matrix.eye(3);
             expected = new Matrix([
                 [1, 0, 0],
                 [0, 1, 0],
@@ -230,6 +232,22 @@ describe("Matrix unit tests", function () {
     });
     
     describe("Internal matrix uses", function () {
+        
+        var mtx;
+        
+        
+        beforeEach(function () {
+            mtx = new Matrix([
+                [11, 12, 13, 14, 15],
+                [21, 22, 23, 24, 25],
+                [31, 32, 33, 34, 35],
+                [41, 42, 43, 44, 45],
+                [51, 52, 53, 54, 55],
+                [61, 62, 63, 64, 65]
+            ]);
+        });
+
+
 
         it("should throw when the arguments are passed incorrectly", function () {
             var positive;
@@ -262,63 +280,63 @@ describe("Matrix unit tests", function () {
         });
         
         it("should partition a matrix correctly", function () {
-            var mtx = new Matrix([
-                    [1, 3, 4, 5],
-                    [3, 4, 5, 6],
-                    [2, 1, 4, 5],
-                    [6, 11, 3, 7],
-                    [43, 55, 74, 66]
-                ]),
-                part;
+            var part;
             
             // full set of arguments
-            expect((new Matrix(mtx, [0, 0], [1, 1])).equals(new Matrix([1]))).toBe(true);
+            expect((new Matrix(mtx, [0, 0], [1, 1])).equals(new Matrix([11]))).toBe(true);
             part = new Matrix(mtx, [0, 0], [2, 2]);
-            expect(part.$([0, 0])).toBe(1);
-            expect(part.$(0, 1)).toBe(3);
-            expect(part.$(1, 0)).toBe(3);
-            expect((new Matrix(mtx, [0, 0], [2, 2])).equals(new Matrix([[1, 3], [3, 4]]))).toBe(true);
+            expect(part.$([0, 0])).toBe(11);
+            expect(part.$(0, 1)).toBe(12);
+            expect(part.$(1, 0)).toBe(21);
+            expect((new Matrix(mtx, [0, 0], [2, 2])).equals(new Matrix([[11, 12], [21, 22]]))).toBe(true);
             part = new Matrix(mtx, [1, 1], [2, 3]);
             expect(part.equals(new Matrix([
-                [4, 5, 6],
-                [1, 4, 5]
+                [22, 23, 24],
+                [32, 33, 34]
             ]))).toBe(true);
             part = new Matrix(mtx, [1, 1], [3, 2]);
             expect(part.equals(new Matrix([
-                [4, 5],
-                [1, 4],
-                [11, 3]
+                [22, 23],
+                [32, 33],
+                [42, 43]
             ]))).toBe(true);
             part = new Matrix(mtx, [3, 0], [2, 4]);
             expect(part.equals(new Matrix([
-                [6, 11, 3, 7],
-                [43, 55, 74, 66]
+                [41, 42, 43, 44],
+                [51, 52, 53, 54]
             ]))).toBe(true);
             part = new Matrix(mtx, [2, 0], [1, 4]);
-            expect(part.equals(new Matrix([2, 1, 4, 5]))).toBe(true);
+            expect(part.equals(new Matrix([31, 32, 33, 34]))).toBe(true);
             part = new Matrix(mtx, [0, 2], [5, 1]);
-            expect(part.equals(new Matrix([4, 5, 4, 3, 74]).tr())).toBe(true);
+            expect(part.equals(new Matrix([13, 23, 33, 43, 53]).tr())).toBe(true);
             
             // no size specified
             part = new Matrix(mtx, [0, 0]);
             expect(part.equals(mtx)).toBe(true);
             part = new Matrix(mtx, [1, 1]);
             expect(part.equals(new Matrix([
-                [4, 5, 6],
-                [1, 4, 5],
-                [11, 3, 7],
-                [55, 74, 66]
-            ])));
+                [ 22, 23, 24, 25 ],
+                [ 32, 33, 34, 35 ],
+                [ 42, 43, 44, 45 ],
+                [ 52, 53, 54, 55 ],
+                [ 62, 63, 64, 65 ]
+            ]))).toBe(true);
         });
-
-        var mtx = new Matrix([
-                [11, 12, 13, 14, 15],
-                [21, 22, 23, 24, 25],
-                [31, 32, 33, 34, 35],
-                [41, 42, 43, 44, 45],
-                [51, 52, 53, 54, 55],
-                [61, 62, 63, 64, 65]
-            ]);
+        
+        it("should not accept invalid arguments", function () {
+            var part;
+            
+            function positive(a, b) {
+                return function () {
+                    part = new Matrix(mtx, a, b);
+                };
+            }
+            
+            expect(positive("a")).toThrowError(INTERNAL_ERROR_REGEX);
+            expect(positive([1])).toThrowError(INTERNAL_ERROR_REGEX);
+            expect(positive([0, 0], "hi")).toThrowError(INTERNAL_ERROR_REGEX);
+            
+        });
 
         it("should return correct column", function () {
             var column;
@@ -355,8 +373,7 @@ describe("Matrix unit tests", function () {
             expect(range.equals(new Matrix([63]))).toBe(true);
             
         });
-        
-    });
+    }); /* describe: Internal matrix uses */
     
     describe("Matrix multiplication", function () {
         
@@ -540,7 +557,7 @@ describe("Matrix unit tests", function () {
                         
         });
         
-        xit("should perform LU factorization as octave does", function () {
+        it("should perform LU factorization as octave does (incomplete)", function () {
             var mtx = new Matrix([
                     [  35.97618080955179, 94.57070314249891, 49.98344086675048, 67.33494624141161, 14.63598802946727 ],
                     [  91.44131503552501, 93.57300959959645, 18.51588934612332, 69.26371258936508, 29.06687359825972 ],
@@ -581,12 +598,12 @@ describe("Matrix unit tests", function () {
             expect(result[0]).toBeDefined();
             expect(result[1]).toBeDefined();
             expect(result[2]).toBeDefined();
-            // FIXME: precision is for the draft test
-            expect(result[0].equalsWithPrecision(l, 10e-15)).toBe(true);
-            expect(result[1].equalsWithPrecision(u, 10e-15)).toBe(true);
-            expect(result[2].equalsWithPrecision(p, 10e-15)).toBe(true);
+            expect((result[2].x(mtx)).equalsWithPrecision(result[0].x(result[1]), 10e-15)).toBe(true);
+            // FIXME: check how octave minimizes the following rows
+//            expect(result[0].equalsWithPrecision(l, 10e-15)).toBe(true);
+//            expect(result[1].equalsWithPrecision(u, 10e-15)).toBe(true);
+//            expect(result[2].equalsWithPrecision(p, 10e-15)).toBe(true);
             
         });
-
     });
 });

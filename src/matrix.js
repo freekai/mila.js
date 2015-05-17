@@ -6,9 +6,8 @@
     var DEFAULT_OFFSET = [0, 0];
     
     /* UTILITY FUNCTIONS */
-
     
-    function sign(x) {
+    function _sign(x) {
         return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : 0 : NaN;
     }
 
@@ -20,47 +19,54 @@
     
     /* MATRIX CLASS */
     
-    var Matrix = function (m, n, /* the rest is used internally */ size) {
+    var Matrix = function (pivot, a, b) {
         var i,
-            j,
-            cval;
+            j;
         
-        if (typeof m === "undefined") {
+        if (typeof pivot === "undefined") {
             throw new Error("Matrix constructor requires an argument");
         }
         
         this.offset = DEFAULT_OFFSET;
-        /* LU factorized representation */
-        this._lu = null;
+        /* LU factorized representation and transformation */
+        this._LU = null;
+        this._P = null;
         
-        if (typeof m === "number" && typeof n === "number") {
+        if (typeof pivot === "number") {
+            var m = pivot,  // number of rows
+                n = a;      // number of columns
+            if (typeof n === "number") {
         // initialize empty matrix of m by n.
-            this._alloc(m, n);
-            this.offset = [0, 0];
-        } else if (m instanceof Array && typeof n === "undefined") {
+                this._alloc(m, n);
+                this.offset = [0, 0];
+                return;
+            }
+        } else if (pivot instanceof Array && arguments.length === 1) {
+            var data = pivot, // 2d javascript array
+                cval;
         // initialize a matrix using array of arrays
         // it is possible to initialize a matrix using an array of arrays
         // or an array (it will be row vector 1 by n)
-            if (m[0] instanceof Array) {
-                if (typeof m[0][0] === "number") {
+            if (data[0] instanceof Array) {
+                if (typeof data[0][0] === "number") {
         // array of arrays
-                    this.m = m.length;
-                    this.n = m[0].length;
-                } else if (m[0][0] instanceof Array) {
+                    this.m = data.length;
+                    this.n = data[0].length;
+                } else if (data[0][0] instanceof Array) {
                     throw new Error("Matrix can be initialized either by array" +
                                     " or array of arrays");
                 } else {
                     throw new Error("Matrix values must be numbers");
                 }
-            } else if (typeof m[0] === "number") {
+            } else if (typeof data[0] === "number") {
         // row vector
                 this.m = 1;
-                this.n = m.length;
+                this.n = data.length;
             }
             this._alloc(this.m, this.n);
             for (i = 0; i < this.m; i++) {
                 for (j = 0; j < this.n; j++) {
-                    cval = (this.m === 1) ? m[j] : m[i][j];
+                    cval = (this.m === 1) ? data[j] : data[i][j];
                     if (typeof cval === "undefined") {
                         this.ir = null;
                         throw new Error("Matrix should be square");
@@ -72,44 +78,54 @@
                         throw new Error("Matrix values must be numbers");
                     }
                 }
-                cval = (this.m === 1) ? m[j] : m[i][j];
+                cval = (this.m === 1) ? data[j] : data[i][j];
                 if (typeof cval !== "undefined") {
                     this.ir = null;
                     throw new Error("Matrix should be square");
                 }
             }
-        } else if (m instanceof Matrix && n !== undefined && n instanceof Array && n.length === 2) {
-            // TODO: check boundary conditions
-            this.ir = m.ir;
-            this.step = m.n;
-            this.offset = n;
-            if (size !== undefined && size instanceof Array && size.length === 2) {
-                this.m = size[0];
-                this.n = size[1];
-            } else {
-                this.m = m.m - this.offset[0];
-                this.n = m.n - this.offset[1];
+            return;
+        } else if (pivot instanceof Matrix) {
+        // Matrix range
+            var M = pivot,  // base matrix
+                offset = a, // offset, array of 2 numbers in form [n, m]
+                size = b;   // size, array of 2 numbers in form [n, m]
+            this.ir = M.ir;
+            this.step = M.n;
+            // check validity of the second argument
+            if (typeof offset === "undefined" || (offset instanceof Array && offset.length === 2)) {
+                this.offset = offset || DEFAULT_OFFSET;
+                // check validity of the third argument
+                if (typeof size === "undefined" || (size instanceof Array && size.length === 2)) {
+                    if (!size) {
+                        this.m = M.m - this.offset[0];
+                        this.n = M.n - this.offset[1];
+                    } else {
+                        this.m = size[0];
+                        this.n = size[1];
+                    }
+                    return;
+                }
             }
-        } else {
-            throw new Error("Internal error. Matrix cannot be constructed: arguments not understood.", arguments);
         }
+        // if we get to this point, it's an error. it should have returned earlier
+        throw new Error("Internal error. Matrix cannot be constructed: arguments not understood.", arguments);
     };
 
     Matrix.prototype = Object.create(null);
     Matrix.prototype.constructor = Matrix;
 
-    function Lower(m) {
-        if (m instanceof Matrix) {
-            this.ir = m.ir;
-            this.m = m.m;
-            this.n = m.n;
-            this.step = m.n;
-            this.offset = m.offset;
-            this._lu = m._lu;
+    function Lower(M) {
+        if (M instanceof Matrix) {
+            this.ir = M.ir;
+            this.m = M.m;
+            this.n = M.n;
+            this.step = M.n;
+            this.offset = M.offset;
+            this._LU = M._LU;
         } else {
             throw new Error("Invalid argument");
         }
-        return this;
     }
     
     Lower.prototype = Object.create(Matrix.prototype);
@@ -117,7 +133,7 @@
     
     Lower.prototype.$ = function (m, n, val) {
         if (typeof val !== "undefined") {
-            throw new Error("This matrix is a read-only matrix");
+            throw new Error("This matrix is read-only");
         }
         var i, j;
         if (m instanceof Array && m.length === 2) {
@@ -127,7 +143,7 @@
             i = m;
             j = n;
         }
-        switch (sign(j - i)) {
+        switch (_sign(j - i)) {
         case -1:
             return Matrix.prototype.$.call(this, m, n);
         case 1:
@@ -135,22 +151,21 @@
         case 0:
             return 1;
         default:
-            throw new Error("Internal error. Sign returned " + sign(i - j) + " for i " + i + " and j " + j);
+            throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
     
-    function Upper(m) {
-        if (m instanceof Matrix) {
-            this.ir = m.ir;
-            this.m = m.m;
-            this.n = m.n;
-            this.step = m.n;
-            this.offset = m.offset;
-            this._lu = m._lu;
+    function Upper(M) {
+        if (M instanceof Matrix) {
+            this.ir = M.ir;
+            this.m = M.m;
+            this.n = M.n;
+            this.step = M.n;
+            this.offset = M.offset;
+            this._LU = M._LU;
         } else {
             throw new Error("Invalid argument");
         }
-        return this;
     }
     
     Upper.prototype = Object.create(Matrix.prototype);
@@ -158,7 +173,7 @@
     
     Upper.prototype.$ = function (m, n, val) {
         if (typeof val !== "undefined") {
-            throw new Error("This matrix is a read-only matrix");
+            throw new Error("This matrix is read-only");
         }
         var i, j;
         if (m instanceof Array && m.length === 2) {
@@ -168,14 +183,14 @@
             i = m;
             j = n;
         }
-        switch (sign(i - j)) {
-        case -1:
+        switch (_sign(i - j)) {
+        case -1: // fall-through
         case 0:
             return Matrix.prototype.$.call(this, m, n);
         case 1:
             return 0;
         default:
-            throw new Error("Internal error. Sign returned " + sign(i - j) + " for i " + i + " and j " + j);
+            throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
     
@@ -387,7 +402,6 @@
         return result;
     };
     
-    // FIXME: not tested
     Matrix.prototype.range = function (offset, size) {
         return new Matrix(this, offset, size);
     };
@@ -409,17 +423,17 @@
     };
     
     Matrix.prototype.l = function () {
-        if (this._lu === null) {
+        if (this._LU === null) {
             this.lu();
         }
-        return new Lower(this._lu);
+        return new Lower(this._LU);
     };
     
     Matrix.prototype.u = function () {
-        if (this._lu === null) {
+        if (this._LU === null) {
             this.lu();
         }
-        return new Upper(this._lu);
+        return new Upper(this._LU);
     };
     
     Matrix.prototype.lu = function () {
@@ -449,8 +463,8 @@
             midx,
             row;
         
-        var P = Matrix.I(this.m),
-            // the matrix we will be operating on
+        var P = Matrix.eye(this.m),
+            // clone the matrix we will be operating on
             A = this.clone();
         
         for (i = 0; i < this.n - 1; i++) {
@@ -464,15 +478,16 @@
                 throw new Error("Matrix " + this + " is singular.");
             }
         }
-        this._lu = A;
+        this._LU = A;
+        this._P = P;
         
-        return [this.l(), this.u(), P];
+        return [this.l(), this.u(), this._P];
         
     };
     
     /** STATIC FUNCTIONS **/
     
-    Matrix.I = function (n) {
+    Matrix.eye = function (n) {
         var result = new Matrix(n, n),
             i;
         for (i = 0; i < n; i++) {
@@ -481,8 +496,8 @@
         return result;
     };
     
-    Matrix.tr = function (A) {
-        return A.tr();
+    Matrix.tr = function (M) {
+        return M.tr();
     };
     
     window.Matrix = Matrix;
