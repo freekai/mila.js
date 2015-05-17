@@ -6,7 +6,12 @@
     var DEFAULT_OFFSET = [0, 0];
     
     /* UTILITY FUNCTIONS */
+
     
+    function sign(x) {
+        return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : 0 : NaN;
+    }
+
     function _idx2ij(rawIdx, m, n) {
         var i = Math.floor(rawIdx / n),
             j = rawIdx - i * n;
@@ -25,6 +30,8 @@
         }
         
         this.offset = DEFAULT_OFFSET;
+        /* LU factorized representation */
+        this._lu = null;
         
         if (typeof m === "number" && typeof n === "number") {
         // initialize empty matrix of m by n.
@@ -86,13 +93,92 @@
         } else {
             throw new Error("Internal error. Matrix cannot be constructed: arguments not understood.", arguments);
         }
-        
-        return this;
     };
 
     Matrix.prototype = Object.create(null);
     Matrix.prototype.constructor = Matrix;
 
+    function Lower(m) {
+        if (m instanceof Matrix) {
+            this.ir = m.ir;
+            this.m = m.m;
+            this.n = m.n;
+            this.step = m.n;
+            this.offset = m.offset;
+            this._lu = m._lu;
+        } else {
+            throw new Error("Invalid argument");
+        }
+        return this;
+    }
+    
+    Lower.prototype = Object.create(Matrix.prototype);
+    Lower.prototype.constructor = Lower;
+    
+    Lower.prototype.$ = function (m, n, val) {
+        if (typeof val !== "undefined") {
+            throw new Error("This matrix is a read-only matrix");
+        }
+        var i, j;
+        if (m instanceof Array && m.length === 2) {
+            i = m[0];
+            j = m[1];
+        } else {
+            i = m;
+            j = n;
+        }
+        switch (sign(j - i)) {
+        case -1:
+            return Matrix.prototype.$.call(this, m, n);
+        case 1:
+            return 0;
+        case 0:
+            return 1;
+        default:
+            throw new Error("Internal error. Sign returned " + sign(i - j) + " for i " + i + " and j " + j);
+        }
+    };
+    
+    function Upper(m) {
+        if (m instanceof Matrix) {
+            this.ir = m.ir;
+            this.m = m.m;
+            this.n = m.n;
+            this.step = m.n;
+            this.offset = m.offset;
+            this._lu = m._lu;
+        } else {
+            throw new Error("Invalid argument");
+        }
+        return this;
+    }
+    
+    Upper.prototype = Object.create(Matrix.prototype);
+    Upper.prototype.constructor = Upper;
+    
+    Upper.prototype.$ = function (m, n, val) {
+        if (typeof val !== "undefined") {
+            throw new Error("This matrix is a read-only matrix");
+        }
+        var i, j;
+        if (m instanceof Array && m.length === 2) {
+            i = m[0];
+            j = m[1];
+        } else {
+            i = m;
+            j = n;
+        }
+        switch (sign(i - j)) {
+        case -1:
+        case 0:
+            return Matrix.prototype.$.call(this, m, n);
+        case 1:
+            return 0;
+        default:
+            throw new Error("Internal error. Sign returned " + sign(i - j) + " for i " + i + " and j " + j);
+        }
+    };
+    
     /**
      * Returns element at position [m, n].
      * @return {number}
@@ -234,7 +320,7 @@
         });
     };
     
-    Matrix.prototype.x = function (B) {
+    Matrix.prototype.mul = function (B) {
         var i,
             j,
             k,
@@ -263,6 +349,8 @@
         return result;
     };
     
+    Matrix.prototype.x = Matrix.prototype.mul;
+    
     Matrix.prototype.div = function (scalar) {
         if (typeof scalar !== "number") {
             throw new Error("Only division by scalar is allowed");
@@ -272,7 +360,21 @@
         }
         this.every(function (v, i) {
             this.$(i, v / scalar);
+            return true;
         });
+        return this;
+    };
+    
+    Matrix.prototype.sub = function (mtx) {
+        // FIXME: range checks
+        if (this.m !== mtx.m && this.n !== mtx.n) {
+            throw new Error("Cannot subtract matrices of different sizes");
+        }
+        this.every(function (v, i) {
+            this.$(i, v - mtx.$(i));
+            return true;
+        });
+        return this;
     };
     
     // FIXME: should not work for partitions
@@ -283,6 +385,41 @@
             result.$(ij[1], ij[0], val);
         }, this);
         return result;
+    };
+    
+    // FIXME: not tested
+    Matrix.prototype.range = function (offset, size) {
+        return new Matrix(this, offset, size);
+    };
+    
+    // FIXME: should also accept range of indices as rowOffset
+    Matrix.prototype.col = function (n, rowOffset) {
+        if (typeof rowOffset === "undefined") {
+            rowOffset = 0;
+        }
+        return new Matrix(this, [rowOffset, n], [this.m - rowOffset, 1]);
+    };
+
+    // FIXME: should also accept range of indices as colOffset
+    Matrix.prototype.row = function (m, colOffset) {
+        if (typeof colOffset === "undefined") {
+            colOffset = 0;
+        }
+        return new Matrix(this, [m, colOffset], [1, this.n - colOffset]);
+    };
+    
+    Matrix.prototype.l = function () {
+        if (this._lu === null) {
+            this.lu();
+        }
+        return new Lower(this._lu);
+    };
+    
+    Matrix.prototype.u = function () {
+        if (this._lu === null) {
+            this.lu();
+        }
+        return new Upper(this._lu);
     };
     
     Matrix.prototype.lu = function () {
@@ -316,35 +453,20 @@
             // the matrix we will be operating on
             A = this.clone();
         
-        // FIXME: draft implementation, see fixmes in inside the loop
         for (i = 0; i < this.n - 1; i++) {
             midx = max(A, i, i);
             P = P._swapRows(i, midx);
             A._swapRows(i, midx);
             if (A.$(i, i) !== 0) {
-                // FIXME: !!! ugly operations, need matrix regions
-                var tmp = i + 1;
-                for (j = tmp; j < A.n; j++) {
-                    A.$(j, i, A.$(j, i) / A.$(i, i));
-                }
-                var T = new Matrix(A.n - tmp, A.n - tmp);
-                for (j = 0; j < A.n - tmp; j++) {
-                    for (k = 0; k < A.n - tmp; k++) {
-                        T.$(j, k, T.$(j, k) + A.$(tmp + j, i) * A.$(i, tmp + k));
-                    }
-                }
-                for (j = 0; j < A.n - tmp; j++) {
-                    for (k = 0; k < A.n - tmp; k++) {
-                        A.$(tmp + j, tmp + k, A.$(tmp + j, tmp + k) - T.$(j, k));
-                    }
-                }
+                A.col(i, i + 1).div(A.$(i, i));
+                A.range([i + 1, i + 1]).sub(A.col(i, i + 1).x(A.row(i, i + 1)));
             } else {
-                // FIXME: singular, throw an error
-                throw new Error("Singular!");
+                throw new Error("Matrix " + this + " is singular.");
             }
         }
+        this._lu = A;
         
-        return [A, P];
+        return [this.l(), this.u(), P];
         
     };
     
