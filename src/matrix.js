@@ -11,12 +11,6 @@
         return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : 0 : NaN;
     }
 
-    function _idx2ij(rawIdx, m, n) {
-        var i = Math.floor(rawIdx / n),
-            j = rawIdx - i * n;
-        return [i, j];
-    }
-    
     /* MATRIX CLASS */
     
     var Matrix = function (pivot, a, b) {
@@ -335,28 +329,37 @@
         });
     };
     
-    Matrix.prototype.mul = function (B) {
+    Matrix.prototype.mul = function (M) {
         var i,
             j,
             k,
             tmp,
             result;
         
-        if (typeof B === "undefined" || !(B instanceof Matrix)) {
-            throw new Error("Only two matrices can be multiplied");
-        }
-        if (this.n !== B.m) {
-            throw new Error("Matrices cannot be multiplied " + this.m + "x" + this.n +
-                            " * " + B.m + "x" + B.n);
+        if (typeof M === "undefined" || (!(M instanceof Matrix) && typeof M !== "number")) {
+            throw new Error("Only two matrices or matrix by scalar can be multiplied");
         }
         
-        result = new Matrix(this.m, B.n);
+        if (typeof M === "number") {
+            this.every(function (v, j) {
+                this.$(j, v * M);
+                return true;
+            });
+            return this;
+        }
+        
+        if (this.n !== M.m) {
+            throw new Error("Matrices cannot be multiplied " + this.m + "x" + this.n +
+                            " * " + M.m + "x" + M.n);
+        }
+        
+        result = new Matrix(this.m, M.n);
         
         // TODO: vectorize
         for (i = 0; i < this.m; i++) {
-            for (j = 0; j < B.n; j++) {
+            for (j = 0; j < M.n; j++) {
                 for (k = 0; k < this.n; k++) {
-                    result.$(i, j, result.$(i, j) + this.$(i, k) * B.$(k, j));
+                    result.$(i, j, result.$(i, j) + this.$(i, k) * M.$(k, j));
                 }
             }
         }
@@ -380,13 +383,23 @@
         return this;
     };
     
-    Matrix.prototype.sub = function (mtx) {
-        // FIXME: range checks
-        if (this.m !== mtx.m && this.n !== mtx.n) {
+    Matrix.prototype.add = function (M) {
+        if (this.m !== M.m && this.n !== M.n) {
             throw new Error("Cannot subtract matrices of different sizes");
         }
         this.every(function (v, i) {
-            this.$(i, v - mtx.$(i));
+            this.$(i, v + M.$(i));
+            return true;
+        });
+        return this;
+    };
+    
+    Matrix.prototype.sub = function (M) {
+        if (this.m !== M.m && this.n !== M.n) {
+            throw new Error("Cannot subtract matrices of different sizes");
+        }
+        this.every(function (v, i) {
+            this.$(i, v - M.$(i));
             return true;
         });
         return this;
@@ -395,10 +408,10 @@
     // FIXME: should not work for partitions
     Matrix.prototype.tr = function () {
         var result = new Matrix(this.n, this.m);
-        this.ir.map(function (val, idx) {
-            var ij = _idx2ij(idx, this.m, this.n);
-            result.$(ij[1], ij[0], val);
-        }, this);
+        this.every(function (val, idx) {
+            result.$(idx[1], idx[0], val);
+            return true;
+        });
         return result;
     };
     
