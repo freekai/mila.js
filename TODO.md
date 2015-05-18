@@ -1,6 +1,12 @@
-# Basic operations
+# TODO
 
-* Matrix regions which behave like matrices
+## Basic operations
+
+* ~~Matrix regions which behave like matrices~~
 * Addition
-* Subtraction
-* Division by a scalar
+* ~~Subtraction~~
+* ~~Division by a scalar~~
+
+## LU factorization
+
+* Correct, but inconsistent with octave.
