@@ -6,6 +6,7 @@
 * Addition
 * ~~Subtraction~~
 * ~~Division by a scalar~~
+* New matrix out of two matrices
 
 ## LU factorization
 
