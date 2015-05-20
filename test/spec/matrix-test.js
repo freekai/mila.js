@@ -386,13 +386,11 @@ describe("Matrix unit tests", function () {
                 };
             };
             
-            expect(positive(undefined)).toThrowError("Only two matrices can be multiplied");
-            expect(positive(null)).toThrowError("Only two matrices can be multiplied");
-            expect(positive({})).toThrowError("Only two matrices can be multiplied");
-            expect(positive(5)).toThrowError("Only two matrices can be multiplied");
-            expect(positive(0)).toThrowError("Only two matrices can be multiplied");
-            expect(positive(false)).toThrowError("Only two matrices can be multiplied");
-            expect(positive("haha")).toThrowError("Only two matrices can be multiplied");
+            expect(positive(undefined)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
+            expect(positive(null)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
+            expect(positive({})).toThrowError("Only two matrices or matrix by scalar can be multiplied");
+            expect(positive(false)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
+            expect(positive("haha")).toThrowError("Only two matrices or matrix by scalar can be multiplied");
             
         });
         
@@ -517,6 +515,10 @@ describe("Matrix unit tests", function () {
             expect(result.equals(product)).toBe(true);
             expect(result.equalsWithPrecision(octaveProduct, 1e-15)).toBe(true);
 
+        });
+        
+        // TODO
+        xit("should multiply a matrix by a scalar correctly", function () {
         });
     });
     

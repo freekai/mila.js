@@ -280,7 +280,10 @@
     
     Matrix.prototype.clone = function () {
         var result = new Matrix(this.m, this.n);
-        result.ir = this.ir.slice();
+        this.every(function (v, i) {
+            result.$(i, v);
+            return true;
+        });
         return result;
     };
     
@@ -384,22 +387,36 @@
     };
     
     Matrix.prototype.add = function (M) {
-        if (this.m !== M.m && this.n !== M.n) {
-            throw new Error("Cannot subtract matrices of different sizes");
+        var isScalar = false;
+        if (typeof M === "number") {
+            isScalar = true;
+        } else if (M instanceof Matrix) {
+            if (this.m !== M.m && this.n !== M.n) {
+                throw new Error("Cannot add matrices of different sizes");
+            }
+        } else {
+            throw new Error("Invalid argument");
         }
         this.every(function (v, i) {
-            this.$(i, v + M.$(i));
+            this.$(i, v + (!isScalar ? M.$(i) : M));
             return true;
         });
         return this;
     };
     
     Matrix.prototype.sub = function (M) {
-        if (this.m !== M.m && this.n !== M.n) {
-            throw new Error("Cannot subtract matrices of different sizes");
+        var isScalar = false;
+        if (typeof M === "number") {
+            isScalar = true;
+        } else if (M instanceof Matrix) {
+            if (this.m !== M.m && this.n !== M.n) {
+                throw new Error("Cannot add matrices of different sizes");
+            }
+        } else {
+            throw new Error("Invalid argument");
         }
         this.every(function (v, i) {
-            this.$(i, v - M.$(i));
+            this.$(i, v - (!isScalar ? M.$(i) : M));
             return true;
         });
         return this;
@@ -496,6 +513,32 @@
         
         return [this.l(), this.u(), this._P];
         
+    };
+    
+    Matrix.prototype.mean = function () {
+        // FIXME: a naïve implementation of mean
+        var sum = 0,
+            c = this.m * this.n;
+        this.every(function (val) {
+            sum += val;
+            return true;
+        });
+        return sum / c;
+    };
+    
+    Matrix.prototype.std = function () {
+        // FIXME: a naïve implementation of std
+        var sum = 0,
+            c = this.m * this.n,
+            mean = this.mean();
+        if (c === 1 || c < 0) {
+            return NaN;
+        }
+        this.every(function (val) {
+            sum += Math.pow(val - mean, 2);
+            return true;
+        });
+        return Math.sqrt(sum / (c - 1));
     };
     
     /** STATIC FUNCTIONS **/

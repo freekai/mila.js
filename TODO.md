@@ -3,7 +3,7 @@
 ## Basic operations
 
 * ~~Matrix regions which behave like matrices~~
-* Addition
+* ~~Addition~~
 * ~~Subtraction~~
 * ~~Division by a scalar~~
 * New matrix out of two matrices
