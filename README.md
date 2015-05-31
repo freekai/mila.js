@@ -1,7 +1,7 @@
 # mila.js
 Machine Intelligence / Linear Algebra in JavaScript
 
-Copyright 2015 Arzhan "kai" Kinzhalin. All rights reserved.
+Copyright &copy; 2015 Arzhan "kai" Kinzhalin. All rights reserved.
 
 ---------------------------------------
 THIS IS WORK IN PROGRESS. DO NOT USE.
