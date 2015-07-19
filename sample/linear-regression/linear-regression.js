@@ -1,21 +1,21 @@
 /*global XMLHttpRequest:false, window:false, document:false, console:false, Matrix:false */
 (function () {
     "use strict";
-    
+
     var ts,
         output;
-    
+
     function normalizeFeature(X) {
         var mean = X.mean(),
             stddev = X.std();
-        
+
         X.sub(mean).div(stddev);
 
     }
-    
+
     function Deferred() {
     }
-    
+
     Deferred.prototype = {
         _next: undefined,
         then: function (next) {
@@ -27,7 +27,7 @@
             }
         }
     };
-    
+
     function getData(url, callback) {
         var req = new XMLHttpRequest();
         req.overrideMimeType("application/json; charset=utf-8");
@@ -45,14 +45,14 @@
 
             te = new Date().getTime();
             output.innerHTML += " done (in " + (te - ts) + " ms)\n";
-            
+
             callback(data);
         };
         req.open("GET", url, true);
         req.responseType = "json";
         req.send();
     }
-    
+
     function doGD(X, y, theta, alpha, iter) {
         var te,
             m = X.m,
@@ -61,7 +61,7 @@
             i,
             j;
         ts = new Date().getTime();
-        
+
         for (i = 0; i < iter; i++) {
             delta = new Matrix(1, X.n);
             for (j = 0; j < m; j++) {
@@ -71,19 +71,19 @@
             }
             theta.add(delta.x(alpha).div(m));
         }
-        
+
         te = new Date().getTime();
         output.innerHTML += "Gradient descent completed in " + (te - ts) + " ms.\n";
         return theta;
     }
-    
+
     function linearRegressionMultiVar() {
         var deferred = new Deferred();
-        
+
         output.innerHTML += "\n\nRunning linear regression for multiple var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
-        
+
         getData('./data-mv.json', function (data) {
             var M = new Matrix(data),
                 Xt = M.range([0, 0], [M.m, M.n - 1]),
@@ -94,7 +94,7 @@
                 iter = 400,
                 i,
                 j;
-            
+
             output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
                 " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
             output.innerHTML += "Learning rate: " + alpha + "\n";
@@ -111,27 +111,27 @@
             for (j = 1; j < X.n; j++) {
                 normalizeFeature(X.col(j));
             }
-            
+
             try {
                 theta = doGD(X, Y, theta, alpha, iter);
             } catch (e) {
                 console.log("Error", e);
             }
-            
+
             output.innerHTML += "Computed theta: " + theta;
             deferred.done();
         });
-        
+
         return deferred;
     }
-    
+
     function linearRegression() {
         var deferred = new Deferred();
-        
+
         output.innerHTML += "\n\nRunning linear regression for single var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
-        
+
         getData("./data.json", function (data) {
             var M = new Matrix(data),
                 Xt = M.col(0),
@@ -142,7 +142,7 @@
                 iter = 1500,
                 i,
                 j;
-            
+
             output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
                 " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
             output.innerHTML += "Learning rate: " + alpha + "\n";
@@ -164,7 +164,7 @@
             output.innerHTML += "Computed theta: " + theta;
 
             deferred.done();
-        
+
         });
 
         return deferred;
@@ -172,10 +172,10 @@
 
     window.addEventListener("load", function () {
         output = document.getElementById("output");
-        
+
         linearRegression()
             .then(linearRegressionMultiVar);
-        
+
     });
-    
+
 }());

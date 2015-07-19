@@ -2,30 +2,30 @@
 /*global define, Float64Array, window */
 (function () {
     "use strict";
-    
+
     var DEFAULT_OFFSET = [0, 0];
-    
+
     /* UTILITY FUNCTIONS */
-    
+
     function _sign(x) {
         return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : 0 : NaN;
     }
 
     /* MATRIX CLASS */
-    
+
     var Matrix = function (pivot, a, b) {
         var i,
             j;
-        
+
         if (typeof pivot === "undefined") {
             throw new Error("Matrix constructor requires an argument");
         }
-        
+
         this.offset = DEFAULT_OFFSET;
         /* LU factorized representation and transformation */
         this._LU = null;
         this._P = null;
-        
+
         if (typeof pivot === "number") {
             var m = pivot,  // number of rows
                 n = a;      // number of columns
@@ -121,10 +121,10 @@
             throw new Error("Invalid argument");
         }
     }
-    
+
     Lower.prototype = Object.create(Matrix.prototype);
     Lower.prototype.constructor = Lower;
-    
+
     Lower.prototype.$ = function (m, n, val) {
         if (typeof val !== "undefined") {
             throw new Error("This matrix is read-only");
@@ -148,7 +148,7 @@
             throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
-    
+
     function Upper(M) {
         if (M instanceof Matrix) {
             this.ir = M.ir;
@@ -161,10 +161,10 @@
             throw new Error("Invalid argument");
         }
     }
-    
+
     Upper.prototype = Object.create(Matrix.prototype);
     Upper.prototype.constructor = Upper;
-    
+
     Upper.prototype.$ = function (m, n, val) {
         if (typeof val !== "undefined") {
             throw new Error("This matrix is read-only");
@@ -187,7 +187,7 @@
             throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
-    
+
     /**
      * Returns element at position [m, n].
      * @return {number}
@@ -212,7 +212,7 @@
             throw new Error("Only number assignments are allowed");
         }
     };
-    
+
     Matrix.prototype._swapRows = function (i, j) {
         if (i === j) {
             return this;
@@ -230,10 +230,10 @@
         });
         return this;
     };
-    
+
     Matrix.prototype._alloc = function (m, n) {
         if (this.offset !== DEFAULT_OFFSET) {
-            // cannot allocate a matrix which is has not default [0, 0] offset
+            // cannot allocate a matrix which has not default [0, 0] offset
             throw new Error("Internal Error. Offset is not " + DEFAULT_OFFSET);
         }
         if (m < 1 || n < 1) {
@@ -252,13 +252,13 @@
         this.step = n;
         this.ir = new Float64Array(m * n);
     };
-        
+
     Matrix.prototype.toString = function () {
         var result,
             i,
             j,
             indent = "    ";
-        
+
         result = "[\n";
         result += indent + "[ ";
         result += this.$(0, 0);
@@ -277,7 +277,7 @@
         result += "\n]";
         return result;
     };
-    
+
     Matrix.prototype.clone = function () {
         var result = new Matrix(this.m, this.n);
         this.every(function (v, i) {
@@ -286,7 +286,7 @@
         });
         return result;
     };
-    
+
     Matrix.prototype.equals = function (obj) {
         if (!(obj instanceof Matrix)) {
             throw new Error(obj + " is not comparable to a matrix");
@@ -294,12 +294,12 @@
         if (this.m * this.n !== obj.m * obj.n) {
             return false;
         }
-        // FIXME: will not work for partition
+        // FIXME: will not work for partitioned matrix
         return this.every(function (v, i) {
             return obj.$(i) === v;
         }, this);
     };
-    
+
     Matrix.prototype.every = function (callback, tval) {
         var i, j, T, result;
         if (tval === undefined) {
@@ -315,7 +315,7 @@
         }
         return true;
     };
-    
+
     Matrix.prototype.equalsWithPrecision = function (obj, epsilon) {
         var i,
             j;
@@ -325,24 +325,24 @@
         if (this.ir.length !== obj.ir.length) {
             return false;
         }
-        // FIXME: will not work for partition
+        // FIXME: will not work for partitioned matrix
         return this.ir.every(function (v, i) {
             var denom = Math.max(Math.abs(v), Math.abs(obj.ir[i]));
             return Math.abs(obj.ir[i] - v) / denom < epsilon;
         });
     };
-    
+
     Matrix.prototype.mul = function (M) {
         var i,
             j,
             k,
             tmp,
             result;
-        
+
         if (typeof M === "undefined" || (!(M instanceof Matrix) && typeof M !== "number")) {
             throw new Error("Only two matrices or matrix by scalar can be multiplied");
         }
-        
+
         if (typeof M === "number") {
             this.every(function (v, j) {
                 this.$(j, v * M);
@@ -350,14 +350,14 @@
             });
             return this;
         }
-        
+
         if (this.n !== M.m) {
             throw new Error("Matrices cannot be multiplied " + this.m + "x" + this.n +
                             " * " + M.m + "x" + M.n);
         }
-        
+
         result = new Matrix(this.m, M.n);
-        
+
         // TODO: vectorize
         for (i = 0; i < this.m; i++) {
             for (j = 0; j < M.n; j++) {
@@ -366,12 +366,12 @@
                 }
             }
         }
-                
+
         return result;
     };
-    
+
     Matrix.prototype.x = Matrix.prototype.mul;
-    
+
     Matrix.prototype.div = function (scalar) {
         if (typeof scalar !== "number") {
             throw new Error("Only division by scalar is allowed");
@@ -385,7 +385,7 @@
         });
         return this;
     };
-    
+
     Matrix.prototype.add = function (M) {
         var isScalar = false;
         if (typeof M === "number") {
@@ -403,7 +403,7 @@
         });
         return this;
     };
-    
+
     Matrix.prototype.sub = function (M) {
         var isScalar = false;
         if (typeof M === "number") {
@@ -421,7 +421,7 @@
         });
         return this;
     };
-    
+
     // FIXME: should not work for partitions
     Matrix.prototype.tr = function () {
         var result = new Matrix(this.n, this.m);
@@ -431,11 +431,11 @@
         });
         return result;
     };
-    
+
     Matrix.prototype.range = function (offset, size) {
         return new Matrix(this, offset, size);
     };
-    
+
     // FIXME: should also accept range of indices as rowOffset
     Matrix.prototype.col = function (n, rowOffset) {
         if (typeof rowOffset === "undefined") {
@@ -451,32 +451,32 @@
         }
         return new Matrix(this, [m, colOffset], [1, this.n - colOffset]);
     };
-    
+
     Matrix.prototype.l = function () {
         if (this._LU === null) {
             this.lu();
         }
         return new Lower(this._LU);
     };
-    
+
     Matrix.prototype.u = function () {
         if (this._LU === null) {
             this.lu();
         }
         return new Upper(this._LU);
     };
-    
+
     Matrix.prototype.lu = function () {
         if (this.n !== this.m) {
             throw new Error("Rectangular matrix LU factorization is not implemented");
         }
-                
+
         /* max in [ci:m, cj] */
         function max(A, ci, cj) {
             var i,
                 mval,
                 r;
-            
+
             for (i = ci + 1, mval = A.$(ci, cj), r = cj; i < A.m; i++) {
                 if (A.$(i, cj) > mval) {
                     mval = A.$(i, cj);
@@ -485,18 +485,18 @@
             }
             return r;
         }
-        
+
         var i,
             j,
             k,
             l,
             midx,
             row;
-        
+
         var P = Matrix.eye(this.m),
             // clone the matrix we will be operating on
             A = this.clone();
-        
+
         for (i = 0; i < this.n - 1; i++) {
             midx = max(A, i, i);
             P = P._swapRows(i, midx);
@@ -510,11 +510,11 @@
         }
         this._LU = A;
         this._P = P;
-        
+
         return [this.l(), this.u(), this._P];
-        
+
     };
-    
+
     Matrix.prototype.mean = function () {
         // FIXME: a naïve implementation of mean
         var sum = 0,
@@ -525,7 +525,7 @@
         });
         return sum / c;
     };
-    
+
     Matrix.prototype.std = function () {
         // FIXME: a naïve implementation of std
         var sum = 0,
@@ -540,9 +540,9 @@
         });
         return Math.sqrt(sum / (c - 1));
     };
-    
+
     /** STATIC FUNCTIONS **/
-    
+
     Matrix.eye = function (n) {
         var result = new Matrix(n, n),
             i;
@@ -551,11 +551,11 @@
         }
         return result;
     };
-    
+
     Matrix.tr = function (M) {
         return M.tr();
     };
-    
+
     window.Matrix = Matrix;
-    
+
 }());

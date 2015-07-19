@@ -1,12 +1,12 @@
 /*global describe, it, xit, expect, beforeEach, Matrix, Float64Array */
 describe("Matrix unit tests", function () {
-    
+
     "use strict";
-    
+
     var INTERNAL_ERROR_REGEX = /^Internal error\./;
-    
+
     describe("Matrix construction", function () {
-        
+
         it("should construct matrix of any size", function () {
             var negative = function () {
                 var mtx;
@@ -16,7 +16,7 @@ describe("Matrix unit tests", function () {
             };
             expect(negative).not.toThrowError();
         });
-        
+
         it("should initialize a square matrix using array of arrays", function () {
             var initValue = [
                     [54, 34, 88],
@@ -26,7 +26,7 @@ describe("Matrix unit tests", function () {
                     [13, 9, 55]
                 ],
                 mtx = new Matrix(initValue);
-            
+
             expect(mtx.m).toEqual(initValue.length);
             expect(mtx.n).toEqual(initValue[0].length);
             expect(mtx.$(0, 0)).toEqual(initValue[0][0]);
@@ -35,7 +35,7 @@ describe("Matrix unit tests", function () {
             expect(mtx.$(3, 2)).toEqual(initValue[3][2]);
             expect(mtx.$(4, 1)).toEqual(initValue[4][1]);
         });
-        
+
         it("should throw error if matrix is not square", function () {
             var case1 = function () {
                     return new Matrix([
@@ -57,13 +57,13 @@ describe("Matrix unit tests", function () {
                         [4, 5, 6]
                     ]);
                 };
-            
+
             expect(case1).toThrowError("Matrix should be square");
             expect(case2).toThrowError("Matrix should be square");
             expect(case3).toThrowError("Matrix should be square");
-            
+
         });
-        
+
         it("should throw error if matrix contains non-numeric elements", function () {
             var case1 = function () {
                     return new Matrix([
@@ -88,30 +88,30 @@ describe("Matrix unit tests", function () {
                         [[4, 5], 6]
                     ]);
                 };
-            
+
             expect(case1).toThrowError("Matrix values must be numbers");
             expect(case2).toThrowError("Matrix values must be numbers");
             expect(case3).toThrowError("Matrix can be initialized either by array or array of arrays");
             expect(case4).toThrowError("Matrix values must be numbers");
-            
+
         });
-        
+
         it("should throw error if matrix size is invalid", function () {
             var positive = function (m, n) {
                 return function () {
                     var mtx = new Matrix(m, n);
                 };
             };
-            
+
             expect(positive(0, 0)).toThrowError("Invalid matrix size");
             expect(positive(-1, -1)).toThrowError("Invalid matrix size");
             expect(positive(0, -1)).toThrowError("Invalid matrix size");
             expect(positive(-1, 0)).toThrowError("Invalid matrix size");
             expect(positive(1, 0)).toThrowError("Invalid matrix size");
             expect(positive(0, 1)).toThrowError("Invalid matrix size");
-            
+
         });
-        
+
         it("should print matrix in JSON format", function () {
             var expected = "[\n" +
                 "    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],\n" +
@@ -126,19 +126,19 @@ describe("Matrix unit tests", function () {
                 "    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]\n" +
                 "]",
                 mtx = new Matrix(10, 20);
-            
+
             expect(String("") + mtx).toEqual(expected);
-            
+
         });
-        
+
         it("should correctly transpose matrices", function () {
             var result,
                 expected;
-            
+
             expected = new Matrix([1]);
             result = (new Matrix([1])).tr();
             expect(expected.equals(result)).toBe(true);
-            
+
             expected = new Matrix([
                 [1, 2, 3],
                 [4, 5, 6]
@@ -151,21 +151,21 @@ describe("Matrix unit tests", function () {
             expect(result.m).toEqual(expected.m);
             expect(result.n).toEqual(expected.n);
             expect(expected.equals(result)).toBe(true);
-            
+
         });
-        
+
         it("should return a shallow copy when clone()'ed", function () {
             var mtx,
                 result,
                 anotherResult;
-            
+
             mtx = new Matrix([1]);
             result = mtx.clone();
             expect(result).toBeDefined();
             expect(mtx.equals(result)).toBe(true);
             mtx.$(0, 0, 2);
             expect(mtx.equals(result)).toBe(false);
-            
+
             mtx = new Matrix([
                 [1, 2, 3],
                 [4, 5, 6],
@@ -181,12 +181,12 @@ describe("Matrix unit tests", function () {
             expect(mtx.equals(anotherResult)).toBe(true);
             mtx.$(2, 1, 0);
             expect(mtx.equals(anotherResult)).toBe(false);
-            
+
         });
-        
+
         it("should swap rows correctly", function () {
             var mtx;
-            
+
             mtx = new Matrix([
                 [1, 2, 3],
                 [2, 3, 4],
@@ -199,26 +199,26 @@ describe("Matrix unit tests", function () {
                 [3, 4, 5]
             ]))).toBe(true);
         });
-                
+
     });
-    
+
     describe("Matrix static methods", function () {
-        
+
         it("should construct identity matrices correctly", function () {
             var result,
                 expected;
-            
+
             result = Matrix.eye(1);
             expected = new Matrix([1]);
             expect(result.equals(expected)).toBe(true);
-            
+
             result = Matrix.eye(2);
             expected = new Matrix([
                 [1, 0],
                 [0, 1]
             ]);
             expect(result.equals(expected)).toBe(true);
-            
+
             result = Matrix.eye(3);
             expected = new Matrix([
                 [1, 0, 0],
@@ -226,16 +226,16 @@ describe("Matrix unit tests", function () {
                 [0, 0, 1]
             ]);
             expect(result.equals(expected)).toBe(true);
-            
+
         });
-        
+
     });
-    
+
     describe("Internal matrix uses", function () {
-        
+
         var mtx;
-        
-        
+
+
         beforeEach(function () {
             mtx = new Matrix([
                 [11, 12, 13, 14, 15],
@@ -251,12 +251,12 @@ describe("Matrix unit tests", function () {
 
         it("should throw when the arguments are passed incorrectly", function () {
             var positive;
-            
+
             positive = function () {
                 return new Matrix(4);
             };
             expect(positive).toThrowError(/^Internal error\./);
-            
+
             positive = function () {
                 return new Matrix(new Float64Array(20), [1, 2, 3]);
             };
@@ -266,22 +266,22 @@ describe("Matrix unit tests", function () {
                 return new Matrix(new Matrix([1]), "hi");
             };
             expect(positive).toThrowError(/^Internal error\./);
-            
+
             positive = function () {
                 return new Matrix(new Matrix([1, 3]), [1, 2, 3]);
             };
             expect(positive).toThrowError(/^Internal error\./);
-            
+
             positive = function () {
                 return new Matrix(new Matrix([2]), [1]);
             };
             expect(positive).toThrowError(/^Internal error\./);
 
         });
-        
+
         it("should partition a matrix correctly", function () {
             var part;
-            
+
             // full set of arguments
             expect((new Matrix(mtx, [0, 0], [1, 1])).equals(new Matrix([11]))).toBe(true);
             part = new Matrix(mtx, [0, 0], [2, 2]);
@@ -309,7 +309,7 @@ describe("Matrix unit tests", function () {
             expect(part.equals(new Matrix([31, 32, 33, 34]))).toBe(true);
             part = new Matrix(mtx, [0, 2], [5, 1]);
             expect(part.equals(new Matrix([13, 23, 33, 43, 53]).tr())).toBe(true);
-            
+
             // no size specified
             part = new Matrix(mtx, [0, 0]);
             expect(part.equals(mtx)).toBe(true);
@@ -322,43 +322,43 @@ describe("Matrix unit tests", function () {
                 [ 62, 63, 64, 65 ]
             ]))).toBe(true);
         });
-        
+
         it("should not accept invalid arguments", function () {
             var part;
-            
+
             function positive(a, b) {
                 return function () {
                     part = new Matrix(mtx, a, b);
                 };
             }
-            
+
             expect(positive("a")).toThrowError(INTERNAL_ERROR_REGEX);
             expect(positive([1])).toThrowError(INTERNAL_ERROR_REGEX);
             expect(positive([0, 0], "hi")).toThrowError(INTERNAL_ERROR_REGEX);
-            
+
         });
 
         it("should return correct column", function () {
             var column;
-            
+
             column = mtx.col(0, 0);
             expect(column.equals(new Matrix([[11], [21], [31], [41], [51], [61]]))).toBe(true);
             column = mtx.col(1, 3);
             expect(column.equals(new Matrix([[42], [52], [62]]))).toBe(true);
         });
-        
+
         it("should return correct row", function () {
             var row;
-            
+
             row = mtx.row(0, 0);
             expect(row.equals(new Matrix([11, 12, 13, 14, 15]))).toBe(true);
             row = mtx.row(0, 1);
             expect(row.equals(new Matrix([12, 13, 14, 15]))).toBe(true);
         });
-        
+
         it("should return correct range", function () {
             var range;
-            
+
             range = mtx.range([0, 0], [2, 2]);
             expect(range.equals(new Matrix([
                 [11, 12],
@@ -371,53 +371,53 @@ describe("Matrix unit tests", function () {
             ]))).toBe(true);
             range = mtx.range([5, 2], [1, 1]);
             expect(range.equals(new Matrix([63]))).toBe(true);
-            
+
         });
     }); /* describe: Internal matrix uses */
-    
+
     describe("Matrix multiplication", function () {
-        
+
         it("should not allow multiplication of non-matrix objects", function () {
             var mtx1 = new Matrix(2, 3);
-            
+
             var positive = function (obj) {
                 return function () {
                     return mtx1.x(obj);
                 };
             };
-            
+
             expect(positive(undefined)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
             expect(positive(null)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
             expect(positive({})).toThrowError("Only two matrices or matrix by scalar can be multiplied");
             expect(positive(false)).toThrowError("Only two matrices or matrix by scalar can be multiplied");
             expect(positive("haha")).toThrowError("Only two matrices or matrix by scalar can be multiplied");
-            
+
         });
-        
+
         it("should not allow multiplication of non-multiplieable matrices", function () {
-            
+
             var mtx1 = new Matrix(10, 20);
-            
+
             var positive = function (m, n) {
                 return function () {
                     return mtx1.x(new Matrix(m, n));
                 };
             };
-            
+
             expect(positive(1, 1)).toThrowError(/^Matrices cannot be multiplied /);
             expect(positive(2, 2)).toThrowError(/^Matrices cannot be multiplied /);
             expect(positive(10, 20)).toThrowError(/^Matrices cannot be multiplied /);
             expect(positive(19, 20)).toThrowError(/^Matrices cannot be multiplied /);
             expect(positive(21, 20)).toThrowError(/^Matrices cannot be multiplied /);
-            
+
         });
-        
+
         it("should produce correct results when two matrices are multiplied", function () {
             var mtx1,
                 mtx2,
                 product,
                 result;
-            
+
             mtx1 = new Matrix([
                 [1, 2],
                 [3, 4]
@@ -430,23 +430,23 @@ describe("Matrix unit tests", function () {
                 [17],
                 [39]
             ]);
-            
+
             result = mtx1.x(mtx2);
             expect(result).toBeDefined();
             expect(result.m).toBe(2);
             expect(result.n).toBe(1);
             expect(result.equals(product)).toBe(true);
-            
+
             mtx1 = new Matrix([1]);
             mtx2 = new Matrix([2]);
             product = new Matrix([2]);
-            
+
             result = mtx1.x(mtx2);
             expect(result).toBeDefined();
             expect(result.m).toBe(1);
             expect(result.n).toBe(1);
             expect(result.equals(product)).toBe(true);
-            
+
             mtx1 = new Matrix([
                 [ 24.44266152720159, 39.11191113404377, 12.9404743269262, 35.0213329845099, 34.7692298370675, 48.06634649497643, 30.90753115115746, 56.29406571012348, 9.234363396913507, 28.82064587723082, 13.44796858529436, 56.13704392111296, 14.31569700996536, 37.75633861435593, 53.70591699350002, 53.43952974445242, 25.08572873973348, 25.23552737521636, 12.86241155497778, 32.52463569052437 ],
                 [ 6.963649596851451, 44.86869806513358, 37.02288087281365, 48.74541402535881, 9.602907151378707, 44.980851334935, 54.98142831066359, 14.45709851449417, 18.95597723840002, 42.96714639121441, 4.336420181761629, 16.63283112206621, 29.13713039086525, 35.0154179932254, 22.24298342011575, 0.6298308876992702, 42.48203812041059, 25.28866738342267, 40.28723141811641, 45.70276954311309 ],
@@ -459,7 +459,7 @@ describe("Matrix unit tests", function () {
                 [ 36.01839590730855, 50.21567825052138, 39.51366018610811, 36.04004415950244, 4.027606662280023, 5.076916022100355, 10.27803461664117, 26.14673291155315, 37.2074069069586, 30.32320012811416, 28.66251688109061, 21.47131332107489, 13.30828542903636, 11.58873381249782, 9.717876806250384, 10.48335694681198, 1.596264273924258, 19.0858479260893, 8.165100806946894, 55.48291066506685 ],
                 [ 4.555950850371713, 0.1264370039905165, 58.12206397717583, 40.30918036182309, 20.6169169474171, 52.64220578192181, 19.40384315037108, 45.3632244280039, 22.64944213736993, 41.92582392705418, 45.13683767067432, 32.197786522862, 39.87414653406093, 43.13037650368153, 55.42207932205798, 13.24007731219163, 43.32720564227692, 17.84820026211154, 36.51489070562238, 31.33223033112472 ]
             ]);
-            
+
             mtx2 = new Matrix([
                 [ 33.25167374689386, 53.72195320650381, 52.83649841371724, 11.81072228093762, 91.02943718657818, 32.71707473980134, 74.29629126334137, 71.42150798947117, 54.16094897549301, 84.62139528037575, 19.52224921290309, 91.4072835163163, 14.37950020343946, 10.56102915346594, 24.55501876561674, 35.5503742604562, 74.92079247478372, 21.75616161120677, 84.13045231455163, 16.87246392275908, 74.23821109557164, 33.1400162822635, 81.43264544760773, 76.88714572779737, 65.66681191698316, 84.84269475083227, 76.13927021555237, 55.19377923853881, 27.4694854750991, 72.9857716784808 ],
                 [ 23.6625107584786, 59.5350670785821, 32.79965152878731, 5.040590848564001, 44.66977385425619, 42.7739220485425, 5.495184897705633, 59.08265457766527, 8.300149052232236, 37.88779759014848, 62.37008921843752, 7.314511012660178, 74.22688470419261, 41.77804425517391, 26.66458208967277, 8.111229344338904, 39.81787491325485, 70.6683231903433, 3.424595594344508, 13.4513339115243, 78.91712480000488, 43.87002848640574, 74.07675612287701, 69.0458481397113, 90.41628206232963, 8.200529121812632, 85.61273179526655, 61.59868768144663, 64.20346080831983, 43.57289627021465 ],
@@ -482,7 +482,7 @@ describe("Matrix unit tests", function () {
                 [ 29.02535443669462, 15.2210476896198, 64.55941097247108, 9.71282617476496, 16.14219526891208, 64.70062016603984, 64.74415615086477, 28.10514097786917, 45.92494713781228, 86.30595309276958, 39.42681990439375, 44.98209946315397, 89.21982731681524, 43.93892660555635, 37.82270423085923, 47.45989457419377, 62.64430705410737, 84.24131435606709, 12.82296841877759, 59.34736959839523, 77.68380513710349, 74.17308674780433, 47.45637034937102, 26.16248654798085, 15.66491018875507, 90.6462905153154, 24.06676198896964, 24.87648439394226, 86.72442402730947, 31.95742033379856 ],
                 [ 26.37752647937916, 54.07037136032037, 96.00733940446302, 37.48682209756457, 75.99082350662165, 11.77928523525568, 82.91841947517406, 77.99724523562126, 9.747858968501049, 3.143022303606584, 14.10852950298933, 4.083342477799716, 97.20595920801151, 55.53281261997432, 87.97598926380265, 61.93672673148694, 30.52679109725351, 62.41634000401616, 7.297904301395823, 22.28613079264478, 18.5331275830548, 60.69553753921517, 71.37017111478993, 77.31327068200856, 58.42926238218587, 64.79689372787966, 57.56333831224204, 77.35541279431985, 4.373714713804993, 77.60151481065787 ]
             ]);
-            
+
             // octave-generated product
             var octaveProduct = new Matrix([
                 [ 30653.70765439116, 26250.59908029143, 32155.82315798815, 30719.9848158747, 33911.09165257596, 32587.91156588868, 31656.24164559575, 27935.67712416885, 29645.44001524031, 31194.36498944762, 29853.35393895845, 35403.01700195304, 24986.82573340184, 28936.11975166035, 28877.79176232655, 34834.0659653798, 28478.04559029641, 39223.48919134948, 28993.78299016612, 29922.11209635954, 37328.28952491284, 34822.20344207892, 35039.47834339273, 37038.57624940503, 33045.62134783823, 32720.21883518983, 36388.16382165231, 41178.89148418976, 30212.81475494974, 38967.85878105742 ],
@@ -496,7 +496,7 @@ describe("Matrix unit tests", function () {
                 [ 16942.40549393936, 23653.30012248181, 23893.34310120009, 22827.32210840289, 24843.63679957427, 17558.8646635142, 20894.85889289394, 18938.20178702514, 20275.67611311921, 22548.64214437019, 21480.32533937668, 19703.53037226033, 22989.48340794364, 20663.43378319295, 17943.11549370659, 23408.87514319374, 22255.06725514668, 26475.22527759106, 17536.95268409381, 17684.23761945404, 24305.97045325398, 23386.5270598813, 29357.0674465593, 30583.18732107878, 23557.01176409077, 21935.35803348085, 25687.34486526666, 28634.95623508086, 20925.41970993316, 31150.13181447762 ],
                 [ 32385.3035487317, 29169.53755645439, 36475.11843221801, 35280.87385540656, 35402.14205308511, 34694.41654281801, 32877.78089591833, 24775.43100849922, 35368.43885590768, 36464.03048897594, 32645.4682261967, 35037.52359834142, 30505.52175980135, 31642.1923043799, 27584.01979210665, 40868.48155401839, 31579.28213851637, 41202.23920079038, 31533.78724247346, 34962.35697046199, 35936.10045376225, 40254.3098913526, 33888.04230154106, 40379.37048335643, 27116.80682191685, 33765.3081953682, 34697.35284752318, 40453.64539192818, 35000.30781590434, 43039.11762969186 ]
             ]);
-            
+
             product = new Matrix([
                 [ 30653.707654391157, 26250.599080291428, 32155.823157988154, 30719.9848158747, 33911.09165257596, 32587.911565888688, 31656.241645595754, 27935.677124168848, 29645.440015240314, 31194.364989447622, 29853.353938958455, 35403.01700195304, 24986.82573340184, 28936.119751660346, 28877.791762326546, 34834.0659653798, 28478.045590296417, 39223.48919134948, 28993.782990166124, 29922.11209635954, 37328.28952491284, 34822.20344207892, 35039.47834339273, 37038.576249405036, 33045.621347838234, 32720.21883518983, 36388.16382165231, 41178.89148418976, 30212.814754949748, 38967.85878105742 ],
                 [ 25234.24957688088, 25896.32351981485, 30422.93279902824, 24811.074304606347, 27719.26497713717, 33673.30008968121, 27569.72152145447, 23961.797652019664, 25314.89050745911, 30853.790949767645, 29955.988202541776, 27713.932785332647, 27630.025636553622, 26742.354652976966, 26344.76526802495, 32437.466691829377, 27345.586608610363, 38590.45672035773, 26954.20096031728, 30263.876455738093, 34516.025829879545, 36066.91577371296, 31795.54384749937, 33496.06009665092, 29561.65600216461, 26406.079309480887, 32755.473046730785, 34242.799240688604, 31146.130969219772, 36146.24376057832 ],
@@ -509,21 +509,21 @@ describe("Matrix unit tests", function () {
                 [ 16942.405493939365, 23653.300122481814, 23893.343101200095, 22827.3221084029, 24843.63679957427, 17558.864663514203, 20894.858892893943, 18938.201787025144, 20275.676113119207, 22548.642144370195, 21480.325339376683, 19703.53037226033, 22989.48340794364, 20663.433783192955, 17943.11549370659, 23408.87514319374, 22255.06725514667, 26475.225277591064, 17536.952684093816, 17684.23761945404, 24305.97045325398, 23386.5270598813, 29357.06744655931, 30583.18732107878, 23557.011764090767, 21935.35803348085, 25687.344865266652, 28634.956235080856, 20925.41970993317, 31150.13181447763 ],
                 [ 32385.303548731703, 29169.537556454394, 36475.11843221802, 35280.87385540656, 35402.14205308511, 34694.41654281801, 32877.78089591833, 24775.431008499225, 35368.43885590768, 36464.030488975935, 32645.468226196706, 35037.52359834141, 30505.521759801348, 31642.192304379907, 27584.01979210665, 40868.4815540184, 31579.282138516366, 41202.23920079038, 31533.787242473467, 34962.35697046199, 35936.10045376226, 40254.3098913526, 33888.04230154106, 40379.370483356426, 27116.806821916845, 33765.308195368205, 34697.35284752317, 40453.645391928185, 35000.30781590434, 43039.11762969185 ]
             ]);
-            
+
             result = mtx1.x(mtx2);
-            
+
             expect(result.equals(product)).toBe(true);
             expect(result.equalsWithPrecision(octaveProduct, 1e-15)).toBe(true);
 
         });
-        
+
         // TODO
         xit("should multiply a matrix by a scalar correctly", function () {
         });
     });
-    
+
     describe("Matrix LU factorization", function () {
-        
+
         it("should perform LU factorization correctly", function () {
             var mtx = new Matrix([
                     [3, 17, 10],
@@ -536,29 +536,29 @@ describe("Matrix unit tests", function () {
                     [1 / 3, -1 / 4, 6]
                 ]),
                 result;
-            
+
             result = mtx.lu();
-            
+
             expect(result[0].equals(new Matrix([
                 [1,         0,      0],
                 [1 / 2,     1,      0],
                 [1 / 3,    -1 / 4, 1]
             ]))).toBe(true);
-            
+
             expect(result[1].equals(new Matrix([
                 [6,     18,     -12],
                 [0,     8,      16],
                 [0,     0,      6]
             ]))).toBe(true);
-            
+
             expect(result[2].equals(new Matrix([
                 [0, 0, 1],
                 [1, 0, 0],
                 [0, 1, 0]
             ]))).toBe(true);
-                        
+
         });
-        
+
         it("should perform LU factorization as octave does (incomplete)", function () {
             var mtx = new Matrix([
                     [  35.97618080955179, 94.57070314249891, 49.98344086675048, 67.33494624141161, 14.63598802946727 ],
@@ -589,13 +589,13 @@ describe("Matrix unit tests", function () {
                     [ 0, 1, 0, 0, 0 ]
                 ]),
                 result;
-            
+
             result = mtx.lu();
-                        
+
             // sanity checks
             expect((p.x(mtx)).equalsWithPrecision(l.x(u), 10e-15)).toBe(true);
             expect(mtx.equalsWithPrecision(p.tr().x(l.x(u)), 10e-15)).toBe(true);
-            
+
             expect(result).toBeDefined();
             expect(result[0]).toBeDefined();
             expect(result[1]).toBeDefined();
@@ -605,7 +605,7 @@ describe("Matrix unit tests", function () {
 //            expect(result[0].equalsWithPrecision(l, 10e-15)).toBe(true);
 //            expect(result[1].equalsWithPrecision(u, 10e-15)).toBe(true);
 //            expect(result[2].equalsWithPrecision(p, 10e-15)).toBe(true);
-            
+
         });
     });
 });
