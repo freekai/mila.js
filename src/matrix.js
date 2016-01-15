@@ -559,6 +559,50 @@
         return M.tr();
     };
 
+    Matrix.join = function (pivot) {
+        var c = arguments.length,
+            i, j, k,
+            m, n,
+            M,
+            result;
+        if (c === 0) {
+            throw new Error("No arguments.");
+        }
+        if (!(pivot instanceof Matrix)) {
+            throw new Error("Invalid argument. Arguments should be matrices.");
+        }
+        if (c === 1) {
+            return pivot;
+        }
+        m = pivot.m;
+        n = pivot.n;
+
+        for (i = 1; i < c; i++) {
+            M = arguments[i];
+            if (!(M instanceof Matrix)) {
+                throw new Error("Invalid argument. Arguments should be matrices.");
+            }
+            if (m !== M.m) {
+                throw new Error("Cannot join matrices with different number of rows.");
+            }
+            n += M.n;
+        }
+
+        result = new Matrix(m, n);
+        n = 0;
+        for (i = 0; i < c; i++) {
+            M = arguments[i];
+            for (j = 0; j < M.n; j++) {
+                for (k = 0; k < M.m; k++) {
+                    result.$(k, j + n, M.$(k, j));
+                }
+            }
+            n += M.n;
+        }
+        return result;
+
+    };
+
     window.Matrix = Matrix;
 
 }());

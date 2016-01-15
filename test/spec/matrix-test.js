@@ -233,6 +233,123 @@ describe("Matrix unit tests", function () {
 
         });
 
+        it("should join matrices correctly", function () {
+            var m1,
+                m2,
+                result,
+                expected;
+
+            m1 = new Matrix([
+                [0]
+            ]);
+            m2 = new Matrix([
+                [1]
+            ]);
+            expected = new Matrix([
+                [0, 1]
+            ]);
+
+            result = Matrix.join(m1, m2);
+            expect(result.equals(expected)).toBe(true);
+
+            m1 = new Matrix([
+                [0],
+                [1]
+            ]);
+            m2 = new Matrix([
+                [2],
+                [3]
+            ]);
+            expected = new Matrix([
+                [0, 2],
+                [1, 3]
+            ]);
+
+            result = Matrix.join(m1, m2);
+            expect(result.equals(expected)).toBe(true);
+
+            expected = new Matrix([
+                [0, 2, 2, 0],
+                [1, 3, 3, 1]
+            ]);
+
+            result = Matrix.join(m1, m2, m2, m1);
+            expect(result.equals(expected)).toBe(true);
+
+            m1 = new Matrix([
+                [0, 1]
+            ]);
+            m2 = new Matrix([
+                [2, 3]
+            ]);
+            expected = new Matrix([
+                [0, 1, 2, 3]
+            ]);
+
+            result = Matrix.join(m1, m2);
+            expect(result.equals(expected)).toBe(true);
+        });
+
+        it("should throw if matrices are not joinable", function () {
+            var case1 = function () {
+                    var m1 = "a",
+                        m2 = 1;
+                    Matrix.join(m1, m2);
+                },
+                case2 = function () {
+                    var m1 = 1,
+                        m2 = new Matrix([0, 1]);
+                    Matrix.join(m1, m2);
+                },
+                case3 = function () {
+                    var m1 = new Matrix([0]),
+                        m2 = (new Matrix([1, 2])).tr();
+                    Matrix.join(m1, m2);
+                },
+                case4 = function () {
+                    var m1 = new Matrix([
+                            [1, 2],
+                            [3, 4],
+                            [5, 6]
+                        ]),
+                        m2 = new Matrix([
+                            [7, 8]
+                        ]);
+                    Matrix.join(m1, m2);
+                },
+                case5 = function () {
+                    var m1 = new Matrix([
+                            [1, 2],
+                            [3, 4],
+                            [5, 6]
+                        ]),
+                        m2 = new Matrix([
+                            [7, 8],
+                            [9, 10],
+                            [11, 13]
+                        ]),
+                        m3 = new Matrix([
+                            [20, 21]
+                        ]);
+                    Matrix.join(m1, m2, m3);
+                },
+                case6 = function () {
+                    Matrix.join();
+                };
+
+            // non-matrix arguments
+            expect(case1).toThrowError(/Invalid argument/);
+            expect(case2).toThrowError(/Invalid argument/);
+
+            // non-joinable matrices
+            expect(case3).toThrowError(/Cannot join matrices/);
+            expect(case4).toThrowError(/Cannot join matrices/);
+            expect(case5).toThrowError(/Cannot join matrices/);
+
+            // empty arguments
+            expect(case6).toThrowError(/No arguments/);
+        });
+
     });
 
     describe("Internal matrix uses", function () {
