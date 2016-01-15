@@ -13,6 +13,10 @@ describe("Matrix unit tests", function () {
                 mtx = new Matrix(10, 10);
                 mtx = new Matrix(1, 1);
                 mtx = new Matrix(2, 2);
+                mtx = new Matrix([0]);
+                mtx = new Matrix([[0]]);
+                mtx = new Matrix([[0, 1]]);
+                mtx = new Matrix([[0], [1]]);
             };
             expect(negative).not.toThrowError();
         });

@@ -46,6 +46,9 @@
         // array of arrays
                     this.m = data.length;
                     this.n = data[0].length;
+                    if (this.m === 1) { // convert it to vector and treat as such
+                        data = data[0];
+                    }
                 } else if (data[0][0] instanceof Array) {
                     throw new Error("Matrix can be initialized either by array" +
                                     " or array of arrays");
