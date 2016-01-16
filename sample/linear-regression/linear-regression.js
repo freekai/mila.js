@@ -87,7 +87,7 @@
         getData('./data-mv.json', function (data) {
             var M = new Matrix(data),
                 Xt = M.range([0, 0], [M.m, M.n - 1]),
-                X = new Matrix(M.m, Xt.n + 1),
+                X = Matrix.join(Matrix.ones(M.m, 1), Xt),
                 Y = M.col(M.n - 1),
                 theta = new Matrix(1, X.n),
                 alpha = 0.01,
@@ -99,14 +99,6 @@
                 " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
             output.innerHTML += "Learning rate: " + alpha + "\n";
             output.innerHTML += "Iterations: " + iter + "\n";
-
-            // FIXME: no matrix composition, copy manually
-            for (i = 0; i < X.m; i++) {
-                X.$(i, 0, 1.0);
-                for (j = 0; j < Xt.n; j++) {
-                    X.$(i, j + 1, Xt.$(i, j));
-                }
-            }
 
             for (j = 1; j < X.n; j++) {
                 normalizeFeature(X.col(j));
@@ -135,7 +127,7 @@
         getData("./data.json", function (data) {
             var M = new Matrix(data),
                 Xt = M.col(0),
-                X = new Matrix(M.m, Xt.n + 1),
+                X = Matrix.join(Matrix.ones(M.m, 1), Xt),
                 Y = M.col(1),
                 theta = new Matrix(1, X.n),
                 alpha = 0.01,
@@ -147,14 +139,6 @@
                 " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
             output.innerHTML += "Learning rate: " + alpha + "\n";
             output.innerHTML += "Iterations: " + iter + "\n";
-
-            // FIXME: no matrix composition, copy manually
-            for (i = 0; i < X.m; i++) {
-                X.$(i, 0, 1.0);
-                for (j = 0; j < Xt.n; j++) {
-                    X.$(i, j + 1, Xt.$(i, j));
-                }
-            }
 
             try {
                 theta = doGD(X, Y, theta, alpha, iter);
