@@ -555,6 +555,12 @@
         return result;
     };
 
+    Matrix.ones = function (n, m) {
+        var result = new Matrix(n, m);
+
+        return result.add(1);
+    };
+
     Matrix.tr = function (M) {
         return M.tr();
     };
