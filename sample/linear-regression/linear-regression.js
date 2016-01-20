@@ -2,8 +2,16 @@
 (function () {
     "use strict";
 
-    var ts,
-        output;
+    var ts;
+
+    function addPre(id) {
+        return function () {
+            var result = document.createElement("pre");
+            result.setAttribute("id", id);
+            document.body.appendChild(result);
+            return Promise.resolve(result);
+        };
+    }
 
     function normalizeFeature(X) {
         var mean = X.mean(),
@@ -13,7 +21,7 @@
 
     }
 
-    function getData(url) {
+    function getData(url, output) {
         return new Promise(function (resolve, reject) {
             var req = new XMLHttpRequest();
             req.overrideMimeType("application/json; charset=utf-8");
@@ -40,7 +48,7 @@
         });
     }
 
-    function doGD(X, y, theta, alpha, iter) {
+    function doGD(X, y, theta, alpha, iter, output) {
         var te,
             m = X.m,
             delta,
@@ -64,13 +72,13 @@
         return theta;
     }
 
-    function linearRegressionMultiVar() {
+    function linearRegressionMultiVar(output) {
 
         output.innerHTML += "\n\nRunning linear regression for multiple var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
 
-        return getData('./data-mv.json')
+        return getData('./data-mv.json', output)
             .then(function (data) {
                 var M = new Matrix(data),
                     Xt = M.range([0, 0], [M.m, M.n - 1]),
@@ -92,7 +100,7 @@
                 }
 
                 try {
-                    theta = doGD(X, Y, theta, alpha, iter);
+                    theta = doGD(X, Y, theta, alpha, iter, output);
                 } catch (e) {
                     console.log("Error", e);
                 }
@@ -101,13 +109,13 @@
             });
     }
 
-    function linearRegression() {
+    function linearRegression(output) {
 
         output.innerHTML += "\n\nRunning linear regression for single var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
 
-        return getData("./data.json")
+        return getData("./data.json", output)
             .then(function (data) {
                 var M = new Matrix(data),
                     Xt = M.col(0),
@@ -125,7 +133,7 @@
                 output.innerHTML += "Iterations: " + iter + "\n";
 
                 try {
-                    theta = doGD(X, Y, theta, alpha, iter);
+                    theta = doGD(X, Y, theta, alpha, iter, output);
                 } catch (e) {
                     console.log("Error", e);
                 }
@@ -135,11 +143,10 @@
     }
 
     window.addEventListener("load", function () {
-        output = document.getElementById("output");
-
-        linearRegression()
+        addPre("singleVar")()
+            .then(linearRegression)
+            .then(addPre("multiVar"))
             .then(linearRegressionMultiVar);
-
     });
 
 }());
