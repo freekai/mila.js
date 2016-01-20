@@ -1,4 +1,4 @@
-/*global XMLHttpRequest:false, window:false, document:false, console:false, Matrix:false */
+/*global XMLHttpRequest:false, window:false, document:false, console:false, Matrix:false, Promise: false */
 (function () {
     "use strict";
 
@@ -13,44 +13,31 @@
 
     }
 
-    function Deferred() {
-    }
+    function getData(url) {
+        return new Promise(function (resolve, reject) {
+            var req = new XMLHttpRequest();
+            req.overrideMimeType("application/json; charset=utf-8");
+            req.onload = function () {
+                var json,
+                    te,
+                    data;
 
-    Deferred.prototype = {
-        _next: undefined,
-        then: function (next) {
-            this._next = next;
-        },
-        done: function () {
-            if (this._next) {
-                return this._next();
-            }
-        }
-    };
+                if (this.response instanceof Object) {
+                    data = this.response;
+                } else {
+                    console.error("Incorrect data format: " + this.response);
+                    return;
+                }
 
-    function getData(url, callback) {
-        var req = new XMLHttpRequest();
-        req.overrideMimeType("application/json; charset=utf-8");
-        req.onload = function () {
-            var json,
-                te,
-                data;
+                te = new Date().getTime();
+                output.innerHTML += " done (in " + (te - ts) + " ms)\n";
 
-            if (this.response instanceof Object) {
-                data = this.response;
-            } else {
-                console.error("Incorrect data format: " + this.response);
-                return;
-            }
-
-            te = new Date().getTime();
-            output.innerHTML += " done (in " + (te - ts) + " ms)\n";
-
-            callback(data);
-        };
-        req.open("GET", url, true);
-        req.responseType = "json";
-        req.send();
+                resolve(data);
+            };
+            req.open("GET", url, true);
+            req.responseType = "json";
+            req.send();
+        });
     }
 
     function doGD(X, y, theta, alpha, iter) {
@@ -78,80 +65,73 @@
     }
 
     function linearRegressionMultiVar() {
-        var deferred = new Deferred();
 
         output.innerHTML += "\n\nRunning linear regression for multiple var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
 
-        getData('./data-mv.json', function (data) {
-            var M = new Matrix(data),
-                Xt = M.range([0, 0], [M.m, M.n - 1]),
-                X = Matrix.join(Matrix.ones(M.m, 1), Xt),
-                Y = M.col(M.n - 1),
-                theta = new Matrix(1, X.n),
-                alpha = 0.01,
-                iter = 400,
-                i,
-                j;
+        return getData('./data-mv.json')
+            .then(function (data) {
+                var M = new Matrix(data),
+                    Xt = M.range([0, 0], [M.m, M.n - 1]),
+                    X = Matrix.join(Matrix.ones(M.m, 1), Xt),
+                    Y = M.col(M.n - 1),
+                    theta = new Matrix(1, X.n),
+                    alpha = 0.01,
+                    iter = 400,
+                    i,
+                    j;
 
-            output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
-                " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
-            output.innerHTML += "Learning rate: " + alpha + "\n";
-            output.innerHTML += "Iterations: " + iter + "\n";
+                output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
+                    " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
+                output.innerHTML += "Learning rate: " + alpha + "\n";
+                output.innerHTML += "Iterations: " + iter + "\n";
 
-            for (j = 1; j < X.n; j++) {
-                normalizeFeature(X.col(j));
-            }
+                for (j = 1; j < X.n; j++) {
+                    normalizeFeature(X.col(j));
+                }
 
-            try {
-                theta = doGD(X, Y, theta, alpha, iter);
-            } catch (e) {
-                console.log("Error", e);
-            }
+                try {
+                    theta = doGD(X, Y, theta, alpha, iter);
+                } catch (e) {
+                    console.log("Error", e);
+                }
 
-            output.innerHTML += "Computed theta: " + theta;
-            deferred.done();
-        });
-
-        return deferred;
+                output.innerHTML += "Computed theta: " + theta;
+            });
     }
 
     function linearRegression() {
-        var deferred = new Deferred();
 
         output.innerHTML += "\n\nRunning linear regression for single var\n\n";
         output.innerHTML += "Fetching data ...";
         ts = new Date().getTime();
 
-        getData("./data.json", function (data) {
-            var M = new Matrix(data),
-                Xt = M.col(0),
-                X = Matrix.join(Matrix.ones(M.m, 1), Xt),
-                Y = M.col(1),
-                theta = new Matrix(1, X.n),
-                alpha = 0.01,
-                iter = 1500,
-                i,
-                j;
+        return getData("./data.json")
+            .then(function (data) {
+                var M = new Matrix(data),
+                    Xt = M.col(0),
+                    X = Matrix.join(Matrix.ones(M.m, 1), Xt),
+                    Y = M.col(1),
+                    theta = new Matrix(1, X.n),
+                    alpha = 0.01,
+                    iter = 1500,
+                    i,
+                    j;
 
-            output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
-                " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
-            output.innerHTML += "Learning rate: " + alpha + "\n";
-            output.innerHTML += "Iterations: " + iter + "\n";
+                output.innerHTML += "Running gradient descent over " + X.m + " samples (" + Xt.n +
+                    " feature" + (Xt.n === 1 ? "" : "s") + ").\n";
+                output.innerHTML += "Learning rate: " + alpha + "\n";
+                output.innerHTML += "Iterations: " + iter + "\n";
 
-            try {
-                theta = doGD(X, Y, theta, alpha, iter);
-            } catch (e) {
-                console.log("Error", e);
-            }
-            output.innerHTML += "Computed theta: " + theta;
+                try {
+                    theta = doGD(X, Y, theta, alpha, iter);
+                } catch (e) {
+                    console.log("Error", e);
+                }
+                output.innerHTML += "Computed theta: " + theta;
 
-            deferred.done();
-
-        });
-
-        return deferred;
+            });
     }
 
     window.addEventListener("load", function () {
