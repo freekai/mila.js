@@ -377,9 +377,7 @@ describe("Matrix unit tests", function () {
     });
 
     describe("Internal matrix uses", function () {
-
         var mtx;
-
 
         beforeEach(function () {
             mtx = new Matrix([
@@ -391,8 +389,6 @@ describe("Matrix unit tests", function () {
                 [61, 62, 63, 64, 65]
             ]);
         });
-
-
 
         it("should throw when the arguments are passed incorrectly", function () {
             var positive;
@@ -665,12 +661,12 @@ describe("Matrix unit tests", function () {
         it("should multiply a matrix by a scalar correctly", function () {
             var mtx,
                 expected;
-            
+
             mtx = new Matrix([1]);
             expected = new Matrix([5]);
-            
+
             expect(mtx.mul(5).equals(expected)).toBe(true);
-            
+
             mtx = new Matrix([
                 [0, 0],
                 [0, 0]
@@ -679,9 +675,9 @@ describe("Matrix unit tests", function () {
                 [0, 0],
                 [0, 0]
             ]);
-            
+
             expect(mtx.mul(100).equals(expected)).toBe(true);
-            
+
             mtx = new Matrix([
                 [1, 2],
                 [3, 4]
@@ -690,17 +686,17 @@ describe("Matrix unit tests", function () {
                 [4, 8],
                 [12, 16]
             ]);
-            
+
             expect(mtx.mul(4).equals(expected)).toBe(true);
-            
+
             // mtx is reused
             expected = new Matrix([
                 [0, 0],
                 [0, 0]
             ]);
-            
+
             expect(mtx.mul(0).equals(expected)).toBe(true);
-            
+
         });
     });
 
