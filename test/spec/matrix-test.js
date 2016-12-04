@@ -350,6 +350,30 @@ describe("Matrix unit tests", function () {
             expect(case6).toThrowError(/No arguments/);
         });
 
+        it("should create randomly initialized matrix", function () {
+            var mtx = Matrix.rand(3, 4),
+                i,
+                j,
+                refval = mtx.$(0, 0),
+                val,
+                count = 0;
+            expect(mtx.m).toEqual(3);
+            expect(mtx.n).toEqual(4);
+
+            for (i = 0; i < mtx.m; i++) {
+                for (j = 0; j < mtx.n; j++) {
+                    val = mtx.$(i, j);
+                    if (i !== 0 && j !== 0) {
+                        // chance of this happening on 64-bit random values
+                        // over 12 occurences are negligible
+                        expect(val).not.toEqual(refval);
+                    }
+                    expect(val).not.toBeLessThan(0);
+                    expect(val).toBeLessThan(1);
+                }
+            }
+        });
+
     });
 
     describe("Internal matrix uses", function () {

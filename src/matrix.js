@@ -561,6 +561,18 @@
         return result.add(1);
     };
 
+    Matrix.rand = function (n, m) {
+        var result = new Matrix(n, m),
+            i,
+            j;
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < m; j++) {
+                result.$(i, j, Math.random());
+            }
+        }
+        return result;
+    };
+
     Matrix.tr = function (M) {
         return M.tr();
     };
