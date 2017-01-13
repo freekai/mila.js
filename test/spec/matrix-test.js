@@ -1,4 +1,4 @@
-/*global describe, it, xit, expect, beforeEach, Matrix, Float64Array */
+/*global describe, it, expect, beforeEach, Matrix, Float64Array */
 describe("Matrix unit tests", function () {
 
     "use strict";
@@ -9,6 +9,7 @@ describe("Matrix unit tests", function () {
 
         it("should construct matrix of any size", function () {
             var negative = function () {
+                /*eslint-disable no-unused-vars */
                 var mtx;
                 mtx = new Matrix(10, 10);
                 mtx = new Matrix(1, 1);
@@ -17,6 +18,7 @@ describe("Matrix unit tests", function () {
                 mtx = new Matrix([[0]]);
                 mtx = new Matrix([[0, 1]]);
                 mtx = new Matrix([[0], [1]]);
+                /*eslint-enable no-unused-vars */
             };
             expect(negative).not.toThrowError();
         });
@@ -103,7 +105,9 @@ describe("Matrix unit tests", function () {
         it("should throw error if matrix size is invalid", function () {
             var positive = function (m, n) {
                 return function () {
+                    /*eslint-disable no-unused-vars */
                     var mtx = new Matrix(m, n);
+                    /*eslint-enable no-unused-vars */
                 };
             };
 
@@ -355,8 +359,7 @@ describe("Matrix unit tests", function () {
                 i,
                 j,
                 refval = mtx.$(0, 0),
-                val,
-                count = 0;
+                val;
             expect(mtx.m).toEqual(3);
             expect(mtx.n).toEqual(4);
 
@@ -465,11 +468,9 @@ describe("Matrix unit tests", function () {
         });
 
         it("should not accept invalid arguments", function () {
-            var part;
-
             function positive(a, b) {
                 return function () {
-                    part = new Matrix(mtx, a, b);
+                    new Matrix(mtx, a, b);
                 };
             }
 
@@ -708,7 +709,7 @@ describe("Matrix unit tests", function () {
                     [2, 4, -2],
                     [6, 18, -12]
                 ]),
-                expected = new Matrix([
+                expected = new Matrix([ //eslint-disable-line no-unused-vars
                     [6,     18,     -12],
                     [1 / 2, 8,      16],
                     [1 / 3, -1 / 4, 6]

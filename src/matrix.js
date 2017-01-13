@@ -1,5 +1,5 @@
 /*jslint nomen: true, plusplus: true */
-/*global define, Float64Array, window */
+/*global Float64Array, window */
 (function () {
     "use strict";
 
@@ -8,7 +8,7 @@
     /* UTILITY FUNCTIONS */
 
     function _sign(x) {
-        return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : 0 : NaN;
+        return typeof x === "number" ? x ? x < 0 ? -1 : 1 : 0 : NaN;
     }
 
     /* MATRIX CLASS */
@@ -141,14 +141,14 @@
             j = n;
         }
         switch (_sign(j - i)) {
-        case -1:
-            return Matrix.prototype.$.call(this, m, n);
-        case 1:
-            return 0;
-        case 0:
-            return 1;
-        default:
-            throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
+            case -1:
+                return Matrix.prototype.$.call(this, m, n);
+            case 1:
+                return 0;
+            case 0:
+                return 1;
+            default:
+                throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
 
@@ -181,13 +181,13 @@
             j = n;
         }
         switch (_sign(i - j)) {
-        case -1: // fall-through
-        case 0:
-            return Matrix.prototype.$.call(this, m, n);
-        case 1:
-            return 0;
-        default:
-            throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
+            case -1: // fall-through
+            case 0:
+                return Matrix.prototype.$.call(this, m, n);
+            case 1:
+                return 0;
+            default:
+                throw new Error("Internal error. Sign returned " + _sign(i - j) + " for i " + i + " and j " + j);
         }
     };
 
@@ -320,8 +320,6 @@
     };
 
     Matrix.prototype.equalsWithPrecision = function (obj, epsilon) {
-        var i,
-            j;
         if (!(obj instanceof Matrix)) {
             throw new Error(obj + " is not comparable to a matrix");
         }
@@ -339,7 +337,6 @@
         var i,
             j,
             k,
-            tmp,
             result;
 
         if (typeof M === "undefined" || (!(M instanceof Matrix) && typeof M !== "number")) {
@@ -490,11 +487,7 @@
         }
 
         var i,
-            j,
-            k,
-            l,
-            midx,
-            row;
+            midx;
 
         var P = Matrix.eye(this.m),
             // clone the matrix we will be operating on
