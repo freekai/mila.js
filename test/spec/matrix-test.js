@@ -378,6 +378,88 @@ describe("Matrix unit tests", function () {
         });
 
     });
+    
+    describe("Matrix utility methods", function () {
+        var mtx;
+        
+        beforeEach(function () {
+            mtx = new Matrix([
+                [1, 2, 3],
+                [4, 5, 6]
+            ]);
+        });
+        
+        it("should call every() callback correctly", function () {
+            var args1 = [],
+                args2 = [],
+                count = 0,
+                i,
+                fn1 = function () {
+                    args1.push(arguments[0]);
+                    args2.push(arguments[1]);
+                    count++;
+                    return true;
+                },
+                fn2 = function () {
+                    args1.push(arguments[0]);
+                    args2.push(arguments[1]);
+                    count++;
+                    if (count === 4) return false;
+                    return true;
+                };
+            mtx.every(fn1);
+            expect(count).toEqual(6);
+            expect(args1.length).toEqual(6);
+            expect(args2.length).toEqual(6);
+            for (i=0; i < args1.length; i++) {
+                expect(args1[i]).toEqual(i+1);
+            }
+            expect(args2).toEqual([[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]]);
+            args1 = [];
+            args2 = [];
+            count = 0;
+            mtx.every(fn2);
+            expect(count).toEqual(4);
+            expect(args1.length).toEqual(4);
+            expect(args2.length).toEqual(4);
+            for (i=0; i < args1.length; i++) {
+                expect(args1[i]).toEqual(i+1);
+            }
+            expect(args2).toEqual([[0, 0], [0, 1], [0, 2], [1, 0]]);
+        });
+        
+        it("should call each() callback correctly", function () {
+            var args1 = [],
+                count = 0,
+                i,
+                fn1 = function (v) {
+                    args1.push(v);
+                    expect(arguments.length).toEqual(1);
+                    count++;
+                    return 2*v;
+                },
+                fn2 = function (v) {
+                    args1.push(v);
+                    expect(arguments.length).toEqual(1);
+                    count++;
+                    return v/2;
+                };
+            mtx.each(fn1);
+            expect(count).toEqual(6);
+            expect(args1.length).toEqual(6);
+            for (i=0; i < args1.length; i++) {
+                expect(args1[i]).toEqual(i+1);
+            }
+            args1 = [];
+            count = 0;
+            mtx.each(fn2);
+            expect(count).toEqual(6);
+            expect(args1.length).toEqual(6);
+            for (i=0; i < args1.length; i++) {
+                expect(args1[i]).toEqual((i+1)*2);
+            }
+        });
+    });
 
     describe("Internal matrix uses", function () {
         var mtx;

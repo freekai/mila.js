@@ -319,6 +319,21 @@
         return true;
     };
 
+    Matrix.prototype.each = function (callback, tval) {
+        var i, j, T, result;
+        if (typeof callback !== "function") {
+            throw new Error("Argument must be a function, instead got " + callback);
+        }
+        if (tval === undefined) {
+            T = this;
+        }
+        for (i = 0; i < this.m; i++) {
+            for (j = 0; j < this.n; j++) {
+                this.$(i, j, callback.call(T, this.$(i, j)));
+            }
+        }
+    };
+
     Matrix.prototype.equalsWithPrecision = function (obj, epsilon) {
         if (!(obj instanceof Matrix)) {
             throw new Error(obj + " is not comparable to a matrix");
@@ -344,9 +359,8 @@
         }
 
         if (typeof M === "number") {
-            this.every(function (v, j) {
-                this.$(j, v * M);
-                return true;
+            this.each(function (v) {
+                return v * M;
             });
             return this;
         }
@@ -379,9 +393,8 @@
         if (scalar === 0) {
             throw new Error("Division by zero");
         }
-        this.every(function (v, i) {
-            this.$(i, v / scalar);
-            return true;
+        this.each(function (v, i) {
+            return v / scalar;
         });
         return this;
     };
@@ -397,9 +410,8 @@
         } else {
             throw new Error("Invalid argument");
         }
-        this.every(function (v, i) {
-            this.$(i, v + (!isScalar ? M.$(i) : M));
-            return true;
+        this.each(function (v, i) {
+            return v + (!isScalar ? M.$(i) : M);
         });
         return this;
     };
