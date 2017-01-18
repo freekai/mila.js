@@ -11,6 +11,21 @@ function initTheta(outLayerSize, inLayerSize) {
     return Matrix.rand(outLayerSize, inLayerSize+1).x(2*epsilon).sub(epsilon);
 }
 
+/* sigmoid function */
+function sgmd(z) {
+    function _sgmd(y) {
+        return 1.0 / (1. + Math.exp(y*-1));
+    }
+    if (z instanceof Matrix) {
+        z.every(_sgmd);
+        return z;
+    } else if (typeof z === "number") {
+        return _sgmd(z);
+    } else {
+        throw new Error("The argument is not a matrix nor a number.");
+    }
+}
+
 function getData(url) {
     return new Promise(function (resolve, reject) { // eslint-disable-line no-unused-vars
         var req = new XMLHttpRequest();
