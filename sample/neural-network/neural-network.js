@@ -1,6 +1,6 @@
 /*eslint indent: [ "error", 4, { "outerIIFEBody": 0 }]*/
 /*eslint-env browser*/
-/*global Matrix: false */
+/*global Matrix: false, drawData: false */
 (function () {
 
 var ts;
@@ -37,10 +37,13 @@ function getData(url) {
             if (this.response instanceof Object) {
                 data = this.response;
             } else {
-                throw new Error("Incorrect data format: " + this.response);
+                reject("Incorrect data format: " + this.response);
+                return;
             }
 
-            te = new Date().getTime();
+            te = new Date().getTime() - ts;
+
+            console.log("Elapsed time: " + (te/1000) + "s");
 
             resolve(data);
         };
@@ -51,13 +54,11 @@ function getData(url) {
 }
 
 window.addEventListener("load", function () {
-    var te;
     ts = (new Date()).getTime();
 
-    getData('./data-samples.json')
+    getData("./data-samples.json")
         .then(function (data) {
             var i = 0;
-            te = (new Date).getTime();
             function drawNext() {
                 if (i === data.length) return;
                 drawData(data[i]);
