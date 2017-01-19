@@ -59,6 +59,28 @@ window.addEventListener("load", function () {
     getData("./data-samples.json")
         .then(function (data) {
             var i = 0;
+            function rotate(d, dim) {
+                var k, l, v,
+                    i1, i2,
+                    result;
+                if (d.length !== dim*dim) {
+                    throw new Error("Wrong dimension size or unrolled array size.");
+                }
+                result = new Array(400);
+                for (k=0; k < dim; k++) {
+                    for (l=0; l < dim; l++) {
+                        result[l+k*dim] = d[k+dim*l];
+                    }
+                }
+                return result;
+            }
+            for (; i < data.length; i++) {
+                data[i] = rotate(data[i], 20);
+            }
+            return data;
+        })
+        .then(function (data) {
+            var i = 0;
             function drawNext() {
                 if (i === data.length) return;
                 drawData(data[i]);
