@@ -17,7 +17,7 @@ function sgmd(z) {
         return 1.0 / (1. + Math.exp(y*-1));
     }
     if (z instanceof Matrix) {
-        z.every(_sgmd);
+        z.each(_sgmd);
         return z;
     } else if (typeof z === "number") {
         return _sgmd(z);
