@@ -8,7 +8,7 @@ var ts;
 /* initialization */
 function initTheta(outLayerSize, inLayerSize) {
     var epsilon = 0.12;
-    return Matrix.rand(outLayerSize, inLayerSize+1).x(2*epsilon).sub(epsilon);
+    return Matrix.rand(outLayerSize, inLayerSize).x(2*epsilon).sub(epsilon);
 }
 
 /* sigmoid function */
@@ -24,6 +24,39 @@ function sgmd(z) {
     } else {
         throw new Error("The argument is not a matrix nor a number.");
     }
+}
+
+function nnCF(theta, inputLayerSize, hiddenLayerSize, outputLayerSize, input, output, lambda) {
+}
+
+function makeCF(inputLayerSize, hiddenLayerSize, outputLayerSize, input, output, lambda) {
+    return function (t) {
+        return nnCF(t, inputLayerSize, hiddenLayerSize, outputLayerSize, input, output, lambda);
+    }
+}
+
+function fmincg(cf, start, options) {
+}
+
+/* back propagation */
+function doBackProp() {
+    var solution,
+        cf;
+    /* FIXME: make nn arch configurable */
+    /* nn arch:
+     * input: 400 (20x20 images)
+     * hidden: 25
+     * output: 10 (digits, 0 to 9)
+     */
+    /* initial point, random close to zero */
+    var t1 = initTheta(25, 400),
+        t2 = initTheta(10, 25);
+
+    cf = makeCF([t1, t2]);
+
+    /* minimize */
+    fmincg(
+
 }
 
 function getData(url) {
